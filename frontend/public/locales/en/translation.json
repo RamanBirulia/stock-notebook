@@ -1,0 +1,521 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "addPurchase": "Add Purchase"
+  },
+  "dashboard": {
+    "title": "Stock Portfolio Dashboard",
+    "subtitle": "Track your investments and monitor performance",
+    "addFirstStock": "Add your first stock purchase",
+    "addPurchase": "Add Purchase",
+    "error": {
+      "title": "Unable to load dashboard",
+      "message": "There was an error loading your portfolio data. Please try again."
+    },
+    "empty": {
+      "title": "Your portfolio is empty",
+      "message": "Start building your portfolio by adding your first stock purchase."
+    },
+    "stats": {
+      "totalSpent": "Total Invested",
+      "currentValue": "Current Value",
+      "profitLoss": "Profit/Loss",
+      "percentage": "Return"
+    },
+    "portfolio": {
+      "title": "Your Stocks",
+      "stocks": "stocks"
+    },
+    "table": {
+      "symbol": "Symbol",
+      "quantity": "Shares",
+      "currentPrice": "Current Price",
+      "totalValue": "Total Value",
+      "totalSpent": "Total Spent",
+      "profitLoss": "Profit/Loss",
+      "actions": "Actions",
+      "view": "View"
+    }
+  },
+  "stock": {
+    "details": {
+      "title": "Stock Details",
+      "backButton": "Back",
+      "currentPrice": "Current Price",
+      "metrics": {
+        "totalShares": "Total Shares",
+        "totalInvested": "Total Invested",
+        "currentValue": "Current Value",
+        "profitLoss": "Profit/Loss"
+      },
+      "chart": {
+        "title": "Price Chart",
+        "periods": {
+          "1M": "1M",
+          "1Y": "1Y",
+          "5Y": "5Y"
+        }
+      },
+      "purchaseHistory": {
+        "title": "Purchase History",
+        "empty": "No purchases found for this stock",
+        "table": {
+          "date": "Date",
+          "quantity": "Quantity",
+          "pricePerShare": "Price per Share",
+          "commission": "Commission",
+          "totalCost": "Total Cost"
+        }
+      },
+      "errors": {
+        "symbolNotProvided": "Stock symbol not provided",
+        "stockNotFound": "Stock data not found",
+        "loadingError": "Error loading stock data",
+        "chartError": "Error loading chart data"
+      },
+      "loading": {
+        "stock": "Loading stock data...",
+        "chart": "Loading chart..."
+      }
+    }
+  },
+  "chart": {
+    "stockPrice": "Stock Price",
+    "purchases": "Purchases",
+    "date": "Date",
+    "price": "Price ($)"
+  },
+  "addPurchase": {
+    "title": "Add Stock Purchase",
+    "success": "Purchase added successfully!",
+    "form": {},
+    "errors": {
+      "symbolRequired": "Stock symbol is required",
+      "symbolInvalid": "Please enter a valid stock symbol",
+      "quantityRequired": "Number of shares is required",
+      "quantityInvalid": "Number of shares must be greater than 0",
+      "priceRequired": "Price per share is required",
+      "priceInvalid": "Price per share must be greater than 0",
+      "commissionInvalid": "Commission must be 0 or greater",
+      "dateRequired": "Purchase date is required",
+      "submitFailed": "Failed to add stock purchase. Please try again."
+    },
+    "subtitle": "Record a new stock purchase in your portfolio",
+    "fields": {
+      "symbol": "Stock Symbol",
+      "quantity": "Number of Shares",
+      "pricePerShare": "Price Per Share",
+      "commission": "Commission/Fees",
+      "purchaseDate": "Purchase Date"
+    },
+    "placeholders": {
+      "symbol": "e.g., AAPL, GOOGL, MSFT",
+      "quantity": "Enter number of shares",
+      "pricePerShare": "Enter purchase price",
+      "commission": "Enter trading fees (optional)"
+    },
+    "helpers": {
+      "commission": "Optional trading fees and commissions"
+    },
+    "summary": {
+      "title": "Purchase Summary",
+      "shares": "Shares",
+      "subtotal": "Subtotal",
+      "commission": "Commission",
+      "total": "Total Cost"
+    },
+    "submit": "Add Purchase"
+  },
+  "stockSymbolInput": {
+    "placeholder": "Search stocks (e.g., AAPL, GOOGL, MSFT)",
+    "searchError": "Failed to search symbols. Please try again.",
+    "noResults": "No symbols found",
+    "loading": "Searching..."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "back": "Back"
+  },
+  "table": {},
+  "periods": {},
+  "notifications": {},
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggleTheme": "Toggle theme"
+  },
+  "language": {
+    "selectLanguage": "Select Language",
+    "language": "Language"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back! Please sign in to your account",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account?"
+    },
+    "register": {
+      "title": "Sign Up",
+      "subtitle": "Create your account to start tracking your portfolio",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?"
+    },
+    "form": {
+      "username": "Username",
+      "password": "Password",
+      "usernamePlaceholder": "Enter your username",
+      "passwordPlaceholder": "Enter your password",
+      "loading": "Please wait..."
+    },
+    "validation": {
+      "usernameRequired": "Username is required",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters"
+    },
+    "error": {
+      "generic": "An error occurred. Please try again."
+    }
+  },
+  "footer": {
+    "brand": {
+      "name": "Stock Tracker",
+      "description": "Track your investments with precision. Monitor your portfolio performance, analyze trends, and make informed decisions with our comprehensive stock tracking platform.",
+      "madeWith": "Made with",
+      "forInvestors": "for investors worldwide"
+    },
+    "features": {
+      "title": "Features",
+      "portfolioTracking": "Portfolio Tracking",
+      "realTimeData": "Real-time Data",
+      "interactiveCharts": "Interactive Charts",
+      "profitAnalysis": "Profit Analysis"
+    },
+    "connect": {
+      "title": "Connect",
+      "github": "GitHub",
+      "twitter": "Twitter",
+      "email": "Email"
+    },
+    "legal": {
+      "copyright": "All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "support": "Support"
+    },
+    "disclaimer": {
+      "title": "Disclaimer:",
+      "text": "This application is for educational and personal use only. Stock data may be delayed. Always verify information with official sources before making investment decisions."
+    }
+  },
+  "legal": {
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "subtitle": "Transparent & Simple",
+      "lastUpdated": "Last updated:",
+      "sections": {
+        "commitment": "Our Commitment to Your Privacy",
+        "whatWeCollect": "What Information We Collect",
+        "howWeUse": "How We Use Your Information",
+        "dataStorage": "Data Storage & Security",
+        "dataSharing": "Data Sharing Policy",
+        "yourRights": "Your Rights & Control",
+        "questions": "Questions About Privacy?",
+        "updates": "Policy Updates"
+      },
+      "content": {
+        "commitmentText": "At Stock Tracker, we believe in radical transparency. This privacy policy explains exactly what data we collect, how we use it, and most importantly - how you maintain complete control over your information.",
+        "accountInfo": {
+          "title": "Account Information",
+          "items": [
+            "Username (chosen by you)",
+            "Password (encrypted and hashed)",
+            "Last login timestamp",
+            "Account creation date"
+          ]
+        },
+        "portfolioData": {
+          "title": "Stock Portfolio Data",
+          "items": [
+            "Stock symbols you track (e.g., AAPL, MSFT)",
+            "Purchase quantities and prices",
+            "Purchase dates",
+            "Commission fees"
+          ],
+          "note": "This is investment tracking data only. We do not store or have access to your actual brokerage accounts, bank information, or real financial assets."
+        },
+        "dontCollect": {
+          "title": "What We DON'T Collect",
+          "items": [
+            "Real name or personal identity",
+            "Email addresses",
+            "Phone numbers",
+            "Physical addresses",
+            "Social security numbers",
+            "Bank account information",
+            "Credit card information",
+            "Brokerage account details",
+            "Device fingerprinting",
+            "Tracking cookies for advertising"
+          ]
+        },
+        "howWeUse": {
+          "authentication": {
+            "title": "Authentication",
+            "text": "Your username and password are used solely to verify your identity and provide secure access to your personal portfolio data."
+          },
+          "portfolioTracking": {
+            "title": "Portfolio Tracking",
+            "text": "Your stock purchase data is used to calculate portfolio performance, generate charts, and provide investment insights within the application."
+          },
+          "appFunctionality": {
+            "title": "Application Functionality",
+            "text": "We use your data to provide the core features of the application: dashboard views, profit/loss calculations, and historical tracking."
+          }
+        },
+        "dataStorage": {
+          "localStorage": {
+            "title": "Local Storage",
+            "text": "Your data is stored in a local SQLite database. We do not use cloud storage or third-party data services."
+          },
+          "passwordSecurity": {
+            "title": "Password Security",
+            "text": "Passwords are hashed using bcrypt with 12 rounds of salting. We cannot see or recover your original password."
+          },
+          "accessControl": {
+            "title": "Access Control",
+            "text": "Only you can access your portfolio data through your authenticated account. Data is isolated per user with no cross-user access."
+          }
+        },
+        "dataSharing": {
+          "title": "Data Sharing Policy",
+          "noSharing": "We DO NOT share your data. Period.",
+          "text": "Your portfolio information is never sold, shared, or disclosed to third parties under any circumstances. No exceptions."
+        },
+        "yourRights": {
+          "dataDeletion": {
+            "title": "Complete Data Deletion",
+            "subtitle": "Instant & Permanent Deletion",
+            "text": "Request complete account deletion and we will immediately remove ALL your data from our systems. No backup retention, no depersonalization, no gradual deletion - everything is permanently erased within 24 hours. This action cannot be undone."
+          },
+          "dataExport": {
+            "title": "Data Export",
+            "text": "You can export all your portfolio data in JSON format at any time through the application settings."
+          },
+          "accountModification": {
+            "title": "Account Modification",
+            "text": "Change your username or password at any time through your account settings. Update or delete individual portfolio entries as needed."
+          }
+        },
+        "questionsText": "We're committed to transparency. If you have any questions about how we handle your data, please don't hesitate to reach out.",
+        "updatesText": "If we update this privacy policy, we'll notify users through the application interface. The \"Last updated\" date at the top of this page will reflect any changes."
+      }
+    },
+    "termsOfService": {
+      "title": "Terms of Service",
+      "subtitle": "Fair & Simple Terms",
+      "lastUpdated": "Last updated:",
+      "sections": {
+        "agreement": "Agreement to Terms",
+        "serviceDescription": "What Stock Tracker Is",
+        "userResponsibilities": "Your Responsibilities",
+        "disclaimers": "Important Disclaimers",
+        "serviceAvailability": "Service Availability",
+        "termination": "Account Termination",
+        "liability": "Limitation of Liability",
+        "changes": "Changes to These Terms",
+        "governingLaw": "Governing Law",
+        "questions": "Questions About These Terms?"
+      },
+      "content": {
+        "agreementText": "By using Stock Tracker, you agree to these terms. We've written them in plain English to be as clear and fair as possible. These terms protect both you and us while you use our portfolio tracking service.",
+        "serviceDescription": {
+          "educationalTool": {
+            "title": "Educational Tool",
+            "text": "Stock Tracker is a portfolio tracking application designed for educational and personal record-keeping purposes. It helps you monitor hypothetical or real stock purchases you've made."
+          },
+          "notFinancialAdvice": {
+            "title": "Not Financial Advice",
+            "text": "We provide tools and data visualization, but no investment advice, recommendations, or guarantees. All investment decisions are entirely your own responsibility."
+          },
+          "dataTrackingOnly": {
+            "title": "Data Tracking Only",
+            "text": "We only track the purchase data you manually enter. We don't connect to brokerage accounts, execute trades, or handle real money."
+          }
+        },
+        "userResponsibilities": {
+          "accountSecurity": {
+            "title": "Account Security",
+            "items": [
+              "Keep your login credentials secure",
+              "Don't share your account with others",
+              "Report any unauthorized access immediately",
+              "Use a strong, unique password"
+            ]
+          },
+          "accurateInformation": {
+            "title": "Accurate Information",
+            "items": [
+              "Enter accurate purchase data for meaningful results",
+              "Verify stock symbols and prices before entry",
+              "Understand that calculations depend on your input quality"
+            ]
+          },
+          "appropriateUse": {
+            "title": "Appropriate Use",
+            "items": [
+              "Use the service for personal portfolio tracking only",
+              "Don't attempt to hack, abuse, or overload our systems",
+              "Don't use the service for illegal activities",
+              "Respect the intended educational purpose"
+            ]
+          }
+        },
+        "disclaimers": {
+          "noFinancialAdvice": {
+            "title": "No Financial Advice",
+            "text": "Stock Tracker provides tools and data only. Nothing in this application constitutes financial, investment, trading, or other professional advice. Always consult qualified financial advisors before making investment decisions."
+          },
+          "dataAccuracy": {
+            "title": "Data Accuracy",
+            "text": "Stock price data may be delayed, inaccurate, or incomplete. Always verify information with official sources before making any financial decisions. We are not responsible for data errors or market data delays."
+          },
+          "noGuarantees": {
+            "title": "No Guarantees",
+            "text": "We provide the service \"as is\" without warranties of any kind. We don't guarantee uptime, data accuracy, or that the service will meet your specific needs."
+          }
+        },
+        "serviceAvailability": {
+          "maintenance": {
+            "title": "Maintenance & Updates",
+            "text": "We may temporarily suspend the service for maintenance, updates, or improvements. We'll try to minimize disruptions but can't guarantee 100% uptime."
+          },
+          "featureChanges": {
+            "title": "Feature Changes",
+            "text": "We may add, modify, or remove features to improve the service. We'll notify users of significant changes through the application."
+          }
+        },
+        "termination": {
+          "yourRight": {
+            "title": "Your Right to Leave",
+            "text": "You can delete your account and all associated data at any time through the application settings or by contacting us. Deletion is immediate and permanent."
+          },
+          "serviceTermination": {
+            "title": "Service Termination",
+            "text": "We reserve the right to terminate accounts that violate these terms or misuse the service. We'll provide reasonable notice when possible."
+          }
+        },
+        "liability": {
+          "educationalPurpose": {
+            "title": "Educational Purpose",
+            "text": "Stock Tracker is provided for educational and informational purposes only. We are not liable for any investment losses, missed opportunities, or financial decisions made based on information from our service."
+          },
+          "maximumLiability": {
+            "title": "Maximum Liability",
+            "text": "Our total liability for any claims related to the service is limited to the amount you paid for the service (which is currently $0, as the service is free)."
+          }
+        },
+        "changesText": "We may update these terms occasionally to reflect service changes or legal requirements. We'll notify users of significant changes through the application. Continued use after changes indicates acceptance of the new terms.",
+        "governingLawText": "These terms are governed by the laws of the jurisdiction where the service is operated. Any disputes will be resolved through good faith discussion or appropriate legal channels.",
+        "questionsText": "If you have questions about these terms of service or need clarification on any point, please contact us.",
+        "acceptance": {
+          "title": "By using Stock Tracker, you acknowledge that you have read, understood, and agree to these terms of service.",
+          "subtitle": "Thank you for being part of our community!"
+        }
+      }
+    },
+    "common": {
+      "back": "Back",
+      "contactUs": "Contact Us",
+      "support": "Support",
+      "email": "Email"
+    }
+  },
+  "errors": {},
+  "validation": {},
+  "currency": {},
+  "format": {},
+  "states": {},
+  "actions": {},
+  "menu": {},
+  "__DEPRECATED__auth": {
+    "error": {
+      "invalidCredentials": "Invalid username or password",
+      "userExists": "Username already exists",
+      "networkError": "Network error. Please check your connection."
+    }
+  },
+  "__DEPRECATED__footer": {
+    "brand": {
+      "name": "Stock Tracker",
+      "description": "Track your investments with precision. Monitor your portfolio performance, analyze trends, and make informed decisions with our comprehensive stock tracking platform.",
+      "madeWith": "Made with",
+      "forInvestors": "for investors worldwide"
+    },
+    "features": {
+      "title": "Features",
+      "portfolioTracking": "Portfolio Tracking",
+      "realTimeData": "Real-time Data",
+      "interactiveCharts": "Interactive Charts",
+      "profitAnalysis": "Profit Analysis"
+    },
+    "connect": {
+      "title": "Connect",
+      "github": "GitHub",
+      "twitter": "Twitter",
+      "email": "Email"
+    },
+    "legal": {
+      "copyright": "All rights reserved.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "support": "Support"
+    },
+    "disclaimer": {
+      "title": "Disclaimer:",
+      "text": "This application is for educational and personal use only. Stock data may be delayed. Always verify information with official sources before making investment decisions."
+    }
+  },
+  "__DEPRECATED__legal": {
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "subtitle": "Transparent & Simple",
+      "lastUpdated": "Last updated:",
+      "sections": {
+        "commitment": "Our Commitment to Your Privacy",
+        "whatWeCollect": "What Information We Collect",
+        "howWeUse": "How We Use Your Information",
+        "dataStorage": "Data Storage & Security",
+        "dataSharing": "Data Sharing Policy",
+        "yourRights": "Your Rights & Control",
+        "questions": "Questions About Privacy?",
+        "updates": "Policy Updates"
+      }
+    },
+    "termsOfService": {
+      "title": "Terms of Service",
+      "subtitle": "Fair & Simple Terms",
+      "lastUpdated": "Last updated:",
+      "sections": {
+        "agreement": "Agreement to Terms",
+        "serviceDescription": "What Stock Tracker Is",
+        "userResponsibilities": "Your Responsibilities",
+        "disclaimers": "Important Disclaimers",
+        "serviceAvailability": "Service Availability",
+        "termination": "Account Termination",
+        "liability": "Limitation of Liability",
+        "changes": "Changes to These Terms",
+        "governingLaw": "Governing Law",
+        "questions": "Questions About These Terms?"
+      }
+    },
+    "common": {
+      "back": "Back",
+      "contactUs": "Contact Us",
+      "support": "Support",
+      "email": "Email"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+name: stock-tracker
+region: nyc1
+
+services:
+  - name: backend
+    source_dir: /backend
+    github:
+      repo: your-username/stock-notebook
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: backend/Dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 60
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+      success_threshold: 1
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: ${main-db.DATABASE_URL}
+      - key: ALPHA_VANTAGE_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+        value: YOUR_ALPHA_VANTAGE_API_KEY_HERE
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: YOUR_JWT_SECRET_HERE
+      - key: FRONTEND_URL
+        scope: RUN_TIME
+        value: ${frontend.PUBLIC_URL}
+      - key: PORT
+        scope: RUN_TIME
+        value: "8080"
+      - key: RUST_LOG
+        scope: RUN_TIME
+        value: info
+    routes:
+      - path: /api
+      - path: /health
+
+static_sites:
+  - name: frontend
+    source_dir: /frontend
+    github:
+      repo: your-username/stock-notebook
+      branch: main
+      deploy_on_push: true
+    build_command: |
+      npm ci --production=false
+      REACT_APP_API_URL=${backend.PUBLIC_URL} npm run build
+    output_dir: /build
+    index_document: index.html
+    error_document: index.html
+    routes:
+      - path: /
+    catchall_document: index.html
+
+databases:
+  - engine: PG
+    name: main-db
+    num_nodes: 1
+    size: db-s-dev-database
+    version: "14"
+
+alerts:
+  - rule: CPU_UTILIZATION
+    disabled: false
+    value: 85
+  - rule: MEM_UTILIZATION
+    disabled: false
+    value: 85
+  - rule: RESTART_COUNT
+    disabled: false
+    value: 5

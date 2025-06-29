@@ -1,0 +1,456 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for Theme System */
+:root {
+    /* Light theme colors */
+    --color-background: 255 255 255;
+    --color-background-secondary: 249 250 251;
+    --color-background-tertiary: 243 244 246;
+    --color-foreground: 17 24 39;
+    --color-foreground-secondary: 75 85 99;
+    --color-foreground-tertiary: 107 114 128;
+    --color-border: 229 231 235;
+    --color-border-secondary: 209 213 219;
+
+    /* Theme transition duration */
+    --theme-transition-duration: 300ms;
+    --theme-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme colors */
+.dark {
+    --color-background: 17 24 39;
+    --color-background-secondary: 31 41 55;
+    --color-background-tertiary: 55 65 81;
+    --color-foreground: 243 244 246;
+    --color-foreground-secondary: 209 213 219;
+    --color-foreground-tertiary: 156 163 175;
+    --color-border: 75 85 99;
+    --color-border-secondary: 107 114 128;
+}
+
+/* Base styles with theme support */
+html {
+    transition: background-color var(--theme-transition-duration)
+        var(--theme-transition-easing);
+}
+
+body {
+    margin: 0;
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Roboto",
+        "Oxygen",
+        "Ubuntu",
+        "Cantarell",
+        "Fira Sans",
+        "Droid Sans",
+        "Helvetica Neue",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+    transition:
+        background-color var(--theme-transition-duration)
+            var(--theme-transition-easing),
+        color var(--theme-transition-duration) var(--theme-transition-easing);
+    overscroll-behavior: none;
+}
+
+/* Smooth theme transitions for all elements */
+*,
+*::before,
+*::after {
+    transition-property:
+        background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: var(--theme-transition-duration);
+    transition-timing-function: var(--theme-transition-easing);
+}
+
+code {
+    font-family:
+        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+    background-color: rgb(var(--color-background-secondary));
+    color: rgb(var(--color-foreground));
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+/* Enhanced custom scrollbar with theme support */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgb(var(--color-background-secondary));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-border-secondary));
+    border-radius: 4px;
+    transition: background-color var(--theme-transition-duration)
+        var(--theme-transition-easing);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-foreground-tertiary));
+}
+
+::-webkit-scrollbar-corner {
+    background: rgb(var(--color-background-secondary));
+}
+
+/* Firefox scrollbar support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-border-secondary))
+        rgb(var(--color-background-secondary));
+}
+
+/* Enhanced animations with theme support */
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+@keyframes themeTransition {
+    0% {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        rgb(var(--color-background-secondary)) 25%,
+        rgb(var(--color-background-tertiary)) 50%,
+        rgb(var(--color-background-secondary)) 75%
+    );
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Theme transition animation */
+.theme-transition {
+    animation: themeTransition var(--theme-transition-duration)
+        var(--theme-transition-easing);
+}
+
+/* Chart container with theme support */
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+    background-color: rgb(var(--color-background));
+    border-radius: 0.5rem;
+    border: 1px solid rgb(var(--color-border));
+    padding: 1rem;
+}
+
+/* Enhanced button styles with theme awareness */
+.btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+         text-white font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         shadow-sm hover:shadow-md active:shadow-sm
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+.btn-secondary {
+    background-color: rgb(var(--color-background-secondary));
+    color: rgb(var(--color-foreground));
+    border: 1px solid rgb(var(--color-border));
+    @apply font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         shadow-sm hover:shadow-md active:shadow-sm
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+.btn-secondary:hover {
+    background-color: rgb(var(--color-background-tertiary));
+    border-color: rgb(var(--color-border-secondary));
+}
+
+.btn-danger {
+    @apply bg-danger-600 hover:bg-danger-700 active:bg-danger-800
+         text-white font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         shadow-sm hover:shadow-md active:shadow-sm
+         focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2;
+}
+
+.btn-success {
+    @apply bg-success-600 hover:bg-success-700 active:bg-success-800
+         text-white font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         shadow-sm hover:shadow-md active:shadow-sm
+         focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2;
+}
+
+.btn-warning {
+    @apply bg-warning-600 hover:bg-warning-700 active:bg-warning-800
+         text-white font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         shadow-sm hover:shadow-md active:shadow-sm
+         focus:outline-none focus:ring-2 focus:ring-warning-500 focus:ring-offset-2;
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: rgb(var(--color-foreground-secondary));
+    @apply font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         hover:bg-opacity-10 hover:bg-gray-500
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+.btn-ghost:hover {
+    background-color: rgb(var(--color-background-secondary));
+    color: rgb(var(--color-foreground));
+}
+
+/* Enhanced card styles with theme support */
+.card {
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-border));
+    @apply rounded-lg shadow-sm p-6 transition-all duration-200;
+}
+
+.card:hover {
+    box-shadow:
+        0 4px 6px -1px rgb(0 0 0 / 0.1),
+        0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.card-header {
+    background-color: rgb(var(--color-background-secondary));
+    border-bottom: 1px solid rgb(var(--color-border));
+    @apply -m-6 mb-6 p-4 rounded-t-lg;
+}
+
+.card-footer {
+    background-color: rgb(var(--color-background-secondary));
+    border-top: 1px solid rgb(var(--color-border));
+    @apply -m-6 mt-6 p-4 rounded-b-lg;
+}
+
+/* Enhanced input styles */
+.input {
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+    border: 1px solid rgb(var(--color-border));
+    @apply w-full px-3 py-2 rounded-lg
+         transition-all duration-200
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+         placeholder:text-gray-400;
+}
+
+.input:hover {
+    border-color: rgb(var(--color-border-secondary));
+}
+
+.input:focus {
+    background-color: rgb(var(--color-background));
+    box-shadow: 0 0 0 2px rgb(59 130 246 / 0.5);
+}
+
+.input:disabled {
+    background-color: rgb(var(--color-background-secondary));
+    color: rgb(var(--color-foreground-tertiary));
+    @apply cursor-not-allowed opacity-50;
+}
+
+/* Enhanced label styles */
+.label {
+    color: rgb(var(--color-foreground-secondary));
+    @apply block text-sm font-medium mb-2;
+}
+
+.label.required::after {
+    content: " *";
+    @apply text-danger-500;
+}
+
+/* Enhanced message styles */
+.error-message {
+    @apply text-danger-600 text-sm mt-1 flex items-center gap-1;
+}
+
+.success-message {
+    @apply text-success-600 text-sm mt-1 flex items-center gap-1;
+}
+
+.warning-message {
+    @apply text-warning-600 text-sm mt-1 flex items-center gap-1;
+}
+
+.info-message {
+    @apply text-info-600 text-sm mt-1 flex items-center gap-1;
+}
+
+/* Enhanced loading spinner */
+.spinner {
+    @apply animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-primary-600;
+}
+
+.spinner-sm {
+    @apply animate-spin rounded-full h-4 w-4 border-2 border-gray-200 border-t-primary-600;
+}
+
+.spinner-lg {
+    @apply animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-primary-600;
+}
+
+/* Pulse loading animation */
+.pulse-loading {
+    @apply animate-pulse bg-gray-200;
+}
+
+.dark .pulse-loading {
+    background-color: rgb(var(--color-background-secondary));
+}
+
+/* Enhanced responsive table with theme support */
+.table {
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-border));
+    @apply min-w-full divide-y rounded-lg overflow-hidden;
+}
+
+.table th {
+    background-color: rgb(var(--color-background-secondary));
+    color: rgb(var(--color-foreground-secondary));
+    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+}
+
+.table td {
+    color: rgb(var(--color-foreground));
+    @apply px-6 py-4 whitespace-nowrap text-sm;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid rgb(var(--color-border));
+    @apply transition-colors duration-150;
+}
+
+.table tbody tr:hover {
+    background-color: rgb(var(--color-background-secondary) / 0.5);
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Table variants */
+.table-striped tbody tr:nth-child(even) {
+    background-color: rgb(var(--color-background-secondary) / 0.3);
+}
+
+.table-bordered {
+    border: 1px solid rgb(var(--color-border));
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid rgb(var(--color-border));
+}
+
+/* Notification styles */
+.notification {
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-border));
+    @apply rounded-lg shadow-lg p-4 mb-4 transition-all duration-300;
+}
+
+.notification-success {
+    @apply border-success-200 bg-success-50 text-success-800;
+}
+
+.notification-error {
+    @apply border-danger-200 bg-danger-50 text-danger-800;
+}
+
+.notification-warning {
+    @apply border-warning-200 bg-warning-50 text-warning-800;
+}
+
+.notification-info {
+    @apply border-info-200 bg-info-50 text-info-800;
+}
+
+/* Focus styles for accessibility */
+.focus-outline {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+/* Utility classes for theme-aware elements */
+.bg-theme {
+    background-color: rgb(var(--color-background));
+}
+
+.bg-theme-secondary {
+    background-color: rgb(var(--color-background-secondary));
+}
+
+.bg-theme-tertiary {
+    background-color: rgb(var(--color-background-tertiary));
+}
+
+.text-theme {
+    color: rgb(var(--color-foreground));
+}
+
+.text-theme-secondary {
+    color: rgb(var(--color-foreground-secondary));
+}
+
+.text-theme-tertiary {
+    color: rgb(var(--color-foreground-tertiary));
+}
+
+.border-theme {
+    border-color: rgb(var(--color-border));
+}
+
+.border-theme-secondary {
+    border-color: rgb(var(--color-border-secondary));
+}
+
+/* Responsive design utilities */
+@media (max-width: 640px) {
+    .table th,
+    .table td {
+        @apply px-3 py-2 text-xs;
+    }
+
+    .card {
+        @apply p-4;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-success,
+    .btn-warning,
+    .btn-ghost {
+        @apply py-1.5 px-3 text-sm;
+    }
+}

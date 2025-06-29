@@ -1,0 +1,521 @@
+{
+  "nav": {
+    "dashboard": "Panel de Control",
+    "addPurchase": "Agregar Compra"
+  },
+  "dashboard": {
+    "title": "Panel de Control de Portafolio de Acciones",
+    "subtitle": "Rastrea tus inversiones y monitorea el rendimiento",
+    "addFirstStock": "Agrega tu primera compra de acciones",
+    "addPurchase": "Agregar Compra",
+    "error": {
+      "title": "No se pudo cargar el panel de control",
+      "message": "Hubo un error al cargar los datos de tu portafolio. Por favor, inténtalo de nuevo."
+    },
+    "empty": {
+      "title": "Tu portafolio está vacío",
+      "message": "Comienza a construir tu portafolio agregando tu primera compra de acciones."
+    },
+    "stats": {
+      "totalSpent": "Total Invertido",
+      "currentValue": "Valor Actual",
+      "profitLoss": "Ganancia/Pérdida",
+      "percentage": "Retorno"
+    },
+    "portfolio": {
+      "title": "Tus Acciones",
+      "stocks": "acciones"
+    },
+    "table": {
+      "symbol": "Símbolo",
+      "quantity": "Acciones",
+      "currentPrice": "Precio Actual",
+      "totalValue": "Valor Total",
+      "totalSpent": "Total Gastado",
+      "profitLoss": "Ganancia/Pérdida",
+      "actions": "Acciones",
+      "view": "Ver"
+    }
+  },
+  "stock": {
+    "details": {
+      "title": "Detalles de la Acción",
+      "backButton": "Atrás",
+      "currentPrice": "Precio Actual",
+      "metrics": {
+        "totalShares": "Total de Acciones",
+        "totalInvested": "Total Invertido",
+        "currentValue": "Valor Actual",
+        "profitLoss": "Ganancia/Pérdida"
+      },
+      "chart": {
+        "title": "Gráfico de Precios",
+        "periods": {
+          "1M": "1M",
+          "1Y": "1A",
+          "5Y": "5A"
+        }
+      },
+      "purchaseHistory": {
+        "title": "Historial de Compras",
+        "empty": "No se encontraron compras para esta acción",
+        "table": {
+          "date": "Fecha",
+          "quantity": "Cantidad",
+          "pricePerShare": "Precio por Acción",
+          "commission": "Comisión",
+          "totalCost": "Costo Total"
+        }
+      },
+      "errors": {
+        "symbolNotProvided": "Símbolo de acción no proporcionado",
+        "stockNotFound": "Datos de la acción no encontrados",
+        "loadingError": "Error al cargar los datos de la acción",
+        "chartError": "Error al cargar los datos del gráfico"
+      },
+      "loading": {
+        "stock": "Cargando datos de la acción...",
+        "chart": "Cargando gráfico..."
+      }
+    }
+  },
+  "chart": {
+    "stockPrice": "Precio de la Acción",
+    "purchases": "Compras",
+    "date": "Fecha",
+    "price": "Precio ($)"
+  },
+  "addPurchase": {
+    "title": "Agregar Compra de Acciones",
+    "success": "¡Compra agregada exitosamente!",
+    "form": {},
+    "errors": {
+      "symbolRequired": "El símbolo de la acción es requerido",
+      "symbolInvalid": "Por favor ingresa un símbolo de acción válido",
+      "quantityRequired": "El número de acciones es requerido",
+      "quantityInvalid": "El número de acciones debe ser mayor que 0",
+      "priceRequired": "El precio por acción es requerido",
+      "priceInvalid": "El precio por acción debe ser mayor que 0",
+      "commissionInvalid": "La comisión debe ser 0 o mayor",
+      "dateRequired": "La fecha de compra es requerida",
+      "submitFailed": "Error al agregar la compra de acciones. Por favor, inténtalo de nuevo."
+    },
+    "subtitle": "Registra una nueva compra de acciones en tu portafolio",
+    "fields": {
+      "symbol": "Símbolo de la Acción",
+      "quantity": "Número de Acciones",
+      "pricePerShare": "Precio por Acción",
+      "commission": "Comisión/Tarifas",
+      "purchaseDate": "Fecha de Compra"
+    },
+    "placeholders": {
+      "symbol": "ej., AAPL, GOOGL, MSFT",
+      "quantity": "Ingresa el número de acciones",
+      "pricePerShare": "Ingresa el precio de compra",
+      "commission": "Ingresa las tarifas de trading (opcional)"
+    },
+    "helpers": {
+      "commission": "Tarifas de trading y comisiones opcionales"
+    },
+    "summary": {
+      "title": "Resumen de Compra",
+      "shares": "Acciones",
+      "subtotal": "Subtotal",
+      "commission": "Comisión",
+      "total": "Costo Total"
+    },
+    "submit": "Agregar Compra"
+  },
+  "stockSymbolInput": {
+    "placeholder": "Buscar acciones (ej. AAPL, GOOGL, MSFT)",
+    "searchError": "Error al buscar símbolos. Inténtalo de nuevo.",
+    "noResults": "No se encontraron símbolos",
+    "loading": "Buscando..."
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "back": "Atrás"
+  },
+  "table": {},
+  "periods": {},
+  "notifications": {},
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "toggleTheme": "Cambiar tema"
+  },
+  "language": {
+    "selectLanguage": "Seleccionar Idioma",
+    "language": "Idioma"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "subtitle": "¡Bienvenido de vuelta! Por favor inicia sesión en tu cuenta",
+      "submit": "Iniciar Sesión",
+      "noAccount": "¿No tienes una cuenta?"
+    },
+    "register": {
+      "title": "Registrarse",
+      "subtitle": "Crea tu cuenta para comenzar a rastrear tu portafolio",
+      "submit": "Crear Cuenta",
+      "hasAccount": "¿Ya tienes una cuenta?"
+    },
+    "form": {
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "usernamePlaceholder": "Ingresa tu nombre de usuario",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "loading": "Por favor espera..."
+    },
+    "validation": {
+      "usernameRequired": "El nombre de usuario es requerido",
+      "usernameMinLength": "El nombre de usuario debe tener al menos 3 caracteres",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres"
+    },
+    "error": {
+      "generic": "Ocurrió un error. Por favor intenta de nuevo."
+    }
+  },
+  "footer": {
+    "brand": {
+      "name": "Rastreador de Acciones",
+      "description": "Rastrea tus inversiones con precisión. Monitorea el rendimiento de tu portafolio, analiza tendencias y toma decisiones informadas con nuestra plataforma integral de seguimiento de acciones.",
+      "madeWith": "Hecho con",
+      "forInvestors": "para inversores de todo el mundo"
+    },
+    "features": {
+      "title": "Características",
+      "portfolioTracking": "Seguimiento de Portafolio",
+      "realTimeData": "Datos en Tiempo Real",
+      "interactiveCharts": "Gráficos Interactivos",
+      "profitAnalysis": "Análisis de Ganancias"
+    },
+    "connect": {
+      "title": "Conectar",
+      "github": "GitHub",
+      "twitter": "Twitter",
+      "email": "Correo electrónico"
+    },
+    "legal": {
+      "copyright": "Todos los derechos reservados.",
+      "privacyPolicy": "Política de Privacidad",
+      "termsOfService": "Términos de Servicio",
+      "support": "Soporte"
+    },
+    "disclaimer": {
+      "title": "Descargo de responsabilidad:",
+      "text": "Esta aplicación es solo para uso educativo y personal. Los datos de acciones pueden estar retrasados. Siempre verifica la información con fuentes oficiales antes de tomar decisiones de inversión."
+    }
+  },
+  "legal": {
+    "privacyPolicy": {
+      "title": "Política de Privacidad",
+      "subtitle": "Transparente y Simple",
+      "lastUpdated": "Última actualización:",
+      "sections": {
+        "commitment": "Nuestro Compromiso con tu Privacidad",
+        "whatWeCollect": "Qué Información Recopilamos",
+        "howWeUse": "Cómo Usamos tu Información",
+        "dataStorage": "Almacenamiento y Seguridad de Datos",
+        "dataSharing": "Política de Compartir Datos",
+        "yourRights": "Tus Derechos y Control",
+        "questions": "¿Preguntas sobre Privacidad?",
+        "updates": "Actualizaciones de Política"
+      },
+      "content": {
+        "commitmentText": "En Stock Tracker creemos en la transparencia radical. Esta política de privacidad explica exactamente qué datos recopilamos, cómo los usamos y, lo más importante, cómo mantienes el control completo sobre tu información.",
+        "accountInfo": {
+          "title": "Información de la Cuenta",
+          "items": [
+            "Nombre de usuario (elegido por ti)",
+            "Contraseña (encriptada y hasheada)",
+            "Marca de tiempo del último inicio de sesión",
+            "Fecha de creación de la cuenta"
+          ]
+        },
+        "portfolioData": {
+          "title": "Datos del Portafolio de Acciones",
+          "items": [
+            "Símbolos de acciones que sigues (ej. AAPL, MSFT)",
+            "Cantidades y precios de compra",
+            "Fechas de compra",
+            "Tarifas de comisión"
+          ],
+          "note": "Estos son únicamente datos de seguimiento de inversiones. No almacenamos ni tenemos acceso a tus cuentas de corretaje reales, información bancaria o activos financieros reales."
+        },
+        "dontCollect": {
+          "title": "Lo que NO Recopilamos",
+          "items": [
+            "Nombre real o identidad personal",
+            "Direcciones de correo electrónico",
+            "Números de teléfono",
+            "Direcciones físicas",
+            "Números de seguro social",
+            "Información de cuentas bancarias",
+            "Información de tarjetas de crédito",
+            "Detalles de cuentas de corretaje",
+            "Huellas digitales de dispositivos",
+            "Cookies de seguimiento para publicidad"
+          ]
+        },
+        "howWeUse": {
+          "authentication": {
+            "title": "Autenticación",
+            "text": "Tu nombre de usuario y contraseña se usan únicamente para verificar tu identidad y proporcionar acceso seguro a los datos de tu portafolio personal."
+          },
+          "portfolioTracking": {
+            "title": "Seguimiento de Portafolio",
+            "text": "Los datos de compra de tus acciones se usan para calcular el rendimiento del portafolio, generar gráficos y proporcionar información de inversión dentro de la aplicación."
+          },
+          "appFunctionality": {
+            "title": "Funcionalidad de la Aplicación",
+            "text": "Usamos tus datos para proporcionar las características principales de la aplicación: vistas del panel de control, cálculos de ganancia/pérdida y seguimiento histórico."
+          }
+        },
+        "dataStorage": {
+          "localStorage": {
+            "title": "Almacenamiento Local",
+            "text": "Tus datos se almacenan en una base de datos SQLite local. No usamos almacenamiento en la nube ni servicios de datos de terceros."
+          },
+          "passwordSecurity": {
+            "title": "Seguridad de Contraseñas",
+            "text": "Las contraseñas se hashean usando bcrypt con 12 rondas de salting. No podemos ver ni recuperar tu contraseña original."
+          },
+          "accessControl": {
+            "title": "Control de Acceso",
+            "text": "Solo tú puedes acceder a los datos de tu portafolio a través de tu cuenta autenticada. Los datos están aislados por usuario sin acceso cruzado entre usuarios."
+          }
+        },
+        "dataSharing": {
+          "title": "Política de Compartir Datos",
+          "noSharing": "NO compartimos tus datos. Punto.",
+          "text": "La información de tu portafolio nunca se vende, comparte o divulga a terceros bajo ninguna circunstancia. Sin excepciones."
+        },
+        "yourRights": {
+          "dataDeletion": {
+            "title": "Eliminación Completa de Datos",
+            "subtitle": "Eliminación Instantánea y Permanente",
+            "text": "Solicita la eliminación completa de la cuenta y eliminaremos inmediatamente TODOS tus datos de nuestros sistemas. Sin retención de copias de seguridad, sin despersonalización, sin eliminación gradual: todo se borra permanentemente en 24 horas. Esta acción no se puede deshacer."
+          },
+          "dataExport": {
+            "title": "Exportación de Datos",
+            "text": "Puedes exportar todos los datos de tu portafolio en formato JSON en cualquier momento a través de la configuración de la aplicación."
+          },
+          "accountModification": {
+            "title": "Modificación de Cuenta",
+            "text": "Cambia tu nombre de usuario o contraseña en cualquier momento a través de la configuración de tu cuenta. Actualiza o elimina entradas individuales del portafolio según sea necesario."
+          }
+        },
+        "questionsText": "Estamos comprometidos con la transparencia. Si tienes alguna pregunta sobre cómo manejamos tus datos, no dudes en contactarnos.",
+        "updatesText": "Si actualizamos esta política de privacidad, notificaremos a los usuarios a través de la interfaz de la aplicación. La fecha de \"Última actualización\" en la parte superior de esta página reflejará cualquier cambio."
+      }
+    },
+    "termsOfService": {
+      "title": "Términos de Servicio",
+      "subtitle": "Términos Justos y Simples",
+      "lastUpdated": "Última actualización:",
+      "sections": {
+        "agreement": "Acuerdo con los Términos",
+        "serviceDescription": "Qué es el Rastreador de Acciones",
+        "userResponsibilities": "Tus Responsabilidades",
+        "disclaimers": "Descargos de Responsabilidad Importantes",
+        "serviceAvailability": "Disponibilidad del Servicio",
+        "termination": "Terminación de Cuenta",
+        "liability": "Limitación de Responsabilidad",
+        "changes": "Cambios a estos Términos",
+        "governingLaw": "Ley Aplicable",
+        "questions": "¿Preguntas sobre estos Términos?"
+      },
+      "content": {
+        "agreementText": "Al usar Stock Tracker, aceptas estos términos. Los hemos escrito en español claro para ser lo más claros y justos posible. Estos términos nos protegen tanto a ti como a nosotros mientras usas nuestro servicio de seguimiento de portafolio.",
+        "serviceDescription": {
+          "educationalTool": {
+            "title": "Herramienta Educativa",
+            "text": "Stock Tracker es una aplicación de seguimiento de portafolio diseñada para fines educativos y de registro personal. Te ayuda a monitorear compras de acciones hipotéticas o reales que hayas realizado."
+          },
+          "notFinancialAdvice": {
+            "title": "No es Asesoramiento Financiero",
+            "text": "Proporcionamos herramientas y visualización de datos, pero no asesoramiento de inversión, recomendaciones o garantías. Todas las decisiones de inversión son completamente tu responsabilidad."
+          },
+          "dataTrackingOnly": {
+            "title": "Solo Seguimiento de Datos",
+            "text": "Solo rastreamos los datos de compra que ingreses manualmente. No nos conectamos a cuentas de corretaje, ejecutamos operaciones ni manejamos dinero real."
+          }
+        },
+        "userResponsibilities": {
+          "accountSecurity": {
+            "title": "Seguridad de la Cuenta",
+            "items": [
+              "Mantén seguras tus credenciales de inicio de sesión",
+              "No compartas tu cuenta con otros",
+              "Reporta cualquier acceso no autorizado inmediatamente",
+              "Usa una contraseña fuerte y única"
+            ]
+          },
+          "accurateInformation": {
+            "title": "Información Precisa",
+            "items": [
+              "Ingresa datos de compra precisos para obtener resultados significativos",
+              "Verifica los símbolos de acciones y precios antes de ingresarlos",
+              "Entiende que los cálculos dependen de la calidad de tu entrada"
+            ]
+          },
+          "appropriateUse": {
+            "title": "Uso Apropiado",
+            "items": [
+              "Usa el servicio solo para seguimiento de portafolio personal",
+              "No intentes hackear, abusar o sobrecargar nuestros sistemas",
+              "No uses el servicio para actividades ilegales",
+              "Respeta el propósito educativo previsto"
+            ]
+          }
+        },
+        "disclaimers": {
+          "noFinancialAdvice": {
+            "title": "No Asesoramiento Financiero",
+            "text": "Stock Tracker proporciona solo herramientas y datos. Nada en esta aplicación constituye asesoramiento financiero, de inversión, comercial u otro profesional. Siempre consulta a asesores financieros calificados antes de tomar decisiones de inversión."
+          },
+          "dataAccuracy": {
+            "title": "Precisión de Datos",
+            "text": "Los datos de precios de acciones pueden estar retrasados, ser inexactos o incompletos. Siempre verifica la información con fuentes oficiales antes de tomar decisiones financieras. No somos responsables de errores de datos o retrasos en los datos del mercado."
+          },
+          "noGuarantees": {
+            "title": "Sin Garantías",
+            "text": "Proporcionamos el servicio \"tal como está\" sin garantías de ningún tipo. No garantizamos tiempo de actividad, precisión de datos o que el servicio cumpla con tus necesidades específicas."
+          }
+        },
+        "serviceAvailability": {
+          "maintenance": {
+            "title": "Mantenimiento y Actualizaciones",
+            "text": "Podemos suspender temporalmente el servicio para mantenimiento, actualizaciones o mejoras. Trataremos de minimizar las interrupciones pero no podemos garantizar 100% de tiempo de actividad."
+          },
+          "featureChanges": {
+            "title": "Cambios de Características",
+            "text": "Podemos agregar, modificar o eliminar características para mejorar el servicio. Notificaremos a los usuarios de cambios significativos a través de la aplicación."
+          }
+        },
+        "termination": {
+          "yourRight": {
+            "title": "Tu Derecho a Salir",
+            "text": "Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento a través de la configuración de la aplicación o contactándonos. La eliminación es inmediata y permanente."
+          },
+          "serviceTermination": {
+            "title": "Terminación del Servicio",
+            "text": "Nos reservamos el derecho de terminar cuentas que violen estos términos o hagan mal uso del servicio. Proporcionaremos aviso razonable cuando sea posible."
+          }
+        },
+        "liability": {
+          "educationalPurpose": {
+            "title": "Propósito Educativo",
+            "text": "Stock Tracker se proporciona solo con fines educativos e informativos. No somos responsables de pérdidas de inversión, oportunidades perdidas o decisiones financieras tomadas basadas en información de nuestro servicio."
+          },
+          "maximumLiability": {
+            "title": "Responsabilidad Máxima",
+            "text": "Nuestra responsabilidad total por cualquier reclamo relacionado con el servicio está limitada a la cantidad que pagaste por el servicio (que actualmente es $0, ya que el servicio es gratuito)."
+          }
+        },
+        "changesText": "Podemos actualizar estos términos ocasionalmente para reflejar cambios en el servicio o requisitos legales. Notificaremos a los usuarios de cambios significativos a través de la aplicación. El uso continuado después de los cambios indica aceptación de los nuevos términos.",
+        "governingLawText": "Estos términos se rigen por las leyes de la jurisdicción donde se opera el servicio. Cualquier disputa se resolverá a través de discusión de buena fe o canales legales apropiados.",
+        "questionsText": "Si tienes preguntas sobre estos términos de servicio o necesitas aclaración sobre cualquier punto, por favor contáctanos.",
+        "acceptance": {
+          "title": "Al usar Stock Tracker, reconoces que has leído, entendido y aceptas estos términos de servicio.",
+          "subtitle": "¡Gracias por ser parte de nuestra comunidad!"
+        }
+      }
+    },
+    "common": {
+      "back": "Atrás",
+      "contactUs": "Contáctanos",
+      "support": "Soporte",
+      "email": "Correo electrónico"
+    }
+  },
+  "errors": {},
+  "validation": {},
+  "currency": {},
+  "format": {},
+  "states": {},
+  "actions": {},
+  "menu": {},
+  "__DEPRECATED__auth": {
+    "error": {
+      "invalidCredentials": "Nombre de usuario o contraseña inválidos",
+      "userExists": "El nombre de usuario ya existe",
+      "networkError": "Error de red. Por favor verifica tu conexión."
+    }
+  },
+  "__DEPRECATED__footer": {
+    "brand": {
+      "name": "Rastreador de Acciones",
+      "description": "Rastrea tus inversiones con precisión. Monitorea el rendimiento de tu portafolio, analiza tendencias y toma decisiones informadas con nuestra plataforma integral de seguimiento de acciones.",
+      "madeWith": "Hecho con",
+      "forInvestors": "para inversores de todo el mundo"
+    },
+    "features": {
+      "title": "Características",
+      "portfolioTracking": "Seguimiento de Portafolio",
+      "realTimeData": "Datos en Tiempo Real",
+      "interactiveCharts": "Gráficos Interactivos",
+      "profitAnalysis": "Análisis de Ganancias"
+    },
+    "connect": {
+      "title": "Conectar",
+      "github": "GitHub",
+      "twitter": "Twitter",
+      "email": "Correo electrónico"
+    },
+    "legal": {
+      "copyright": "Todos los derechos reservados.",
+      "privacyPolicy": "Política de Privacidad",
+      "termsOfService": "Términos de Servicio",
+      "support": "Soporte"
+    },
+    "disclaimer": {
+      "title": "Descargo de responsabilidad:",
+      "text": "Esta aplicación es solo para uso educativo y personal. Los datos de acciones pueden estar retrasados. Siempre verifica la información con fuentes oficiales antes de tomar decisiones de inversión."
+    }
+  },
+  "__DEPRECATED__legal": {
+    "privacyPolicy": {
+      "title": "Política de Privacidad",
+      "subtitle": "Transparente y Simple",
+      "lastUpdated": "Última actualización:",
+      "sections": {
+        "commitment": "Nuestro Compromiso con tu Privacidad",
+        "whatWeCollect": "Qué Información Recopilamos",
+        "howWeUse": "Cómo Usamos tu Información",
+        "dataStorage": "Almacenamiento y Seguridad de Datos",
+        "dataSharing": "Política de Compartir Datos",
+        "yourRights": "Tus Derechos y Control",
+        "questions": "¿Preguntas sobre Privacidad?",
+        "updates": "Actualizaciones de Política"
+      }
+    },
+    "termsOfService": {
+      "title": "Términos de Servicio",
+      "subtitle": "Términos Justos y Simples",
+      "lastUpdated": "Última actualización:",
+      "sections": {
+        "agreement": "Acuerdo con los Términos",
+        "serviceDescription": "Qué es el Rastreador de Acciones",
+        "userResponsibilities": "Tus Responsabilidades",
+        "disclaimers": "Descargos de Responsabilidad Importantes",
+        "serviceAvailability": "Disponibilidad del Servicio",
+        "termination": "Terminación de Cuenta",
+        "liability": "Limitación de Responsabilidad",
+        "changes": "Cambios a estos Términos",
+        "governingLaw": "Ley Aplicable",
+        "questions": "¿Preguntas sobre estos Términos?"
+      }
+    },
+    "common": {
+      "back": "Atrás",
+      "contactUs": "Contáctanos",
+      "support": "Soporte",
+      "email": "Correo electrónico"
+    }
+  }
+}
