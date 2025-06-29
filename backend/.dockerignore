@@ -1,30 +1,136 @@
 # Rust build artifacts
 target/
+**/*.rs.bk
+*.pdb
 
-# IDE files
+# Development and test files
+examples/
+test_*.sh
+*.test
+test/
+tests/
+benches/
+.cargo/
+
+# IDE and editor files
 .vscode/
 .idea/
 *.iml
+*.swp
+*.swo
+*~
+.sublime-*
 
-# OS files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Environment files
-.env
-.env.local
-.env.production
+.env*
+!.env.example
 
 # Database files
 *.db
 *.db-shm
 *.db-wal
+*.sqlite
+*.sqlite3
 
-# Logs
+# Logs and temporary files
 *.log
+logs/
+*.tmp
+*.temp
+.cache/
 
-# Test files
-test_*.sh
+# Git
+.git/
+.gitignore
+.gitattributes
 
 # Documentation
 *.md
+docs/
+doc/
+
+# Development tools and configs
+Makefile
+.editorconfig
+.rustfmt.toml
+clippy.toml
+rust-toolchain
+rust-toolchain.toml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+Jenkinsfile
+
+# Node.js (if any frontend build artifacts)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Python cache (if any Python scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.tar.gz
+*.zip
+*.rar
+
+# Local development
+.local/
+local/
+
+# Deployment scripts and configs (these are for host, not container)
+deploy*.sh
+docker-compose*.yml
+!docker-compose.yml
+
+# SSL certificates (should be mounted, not copied)
+ssl/
+*.pem
+*.crt
+*.key
+
+# Scripts directory (deployment scripts not needed in container)
+scripts/
+
+# Nginx configs (not needed in backend container)
+nginx/
+
+# Frontend source (not needed in backend container)
+frontend/
+public/
+static/
+assets/
+
+# Development databases
+stocks.db
+
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output
+
+# Misc
+*.patch

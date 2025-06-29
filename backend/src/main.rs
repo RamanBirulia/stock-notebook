@@ -12,7 +12,7 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::Utc;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use sqlx::sqlite::SqlitePool;
+use sqlx::postgres::PgPool;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{info, warn};
@@ -28,7 +28,7 @@ use stock_api::StockApiClient;
 
 #[derive(Clone)]
 struct AppState {
-    db: SqlitePool,
+    db: PgPool,
     stock_client: Arc<StockApiClient>,
     jwt_secret: String,
 }
@@ -52,10 +52,11 @@ async fn main() -> anyhow::Result<()> {
 
     dotenvy::dotenv().ok();
 
-    let database_url =
-        std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:stocks.db".to_string());
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        "postgresql://stock_user:stock_password@localhost:5432/stock_notebook".to_string()
+    });
 
-    let pool = SqlitePool::connect(&database_url).await?;
+    let pool = PgPool::connect(&database_url).await?;
 
     // Run migrations
     sqlx::migrate!("./migrations").run(&pool).await?;
@@ -162,7 +163,7 @@ async fn login(
     Json(login_req): Json<LoginRequest>,
 ) -> Result<Json<AuthResponse>, AppError> {
     let user_row = sqlx::query!(
-        "SELECT id, username, password_hash FROM users WHERE username = ?",
+        "SELECT id, username, password_hash FROM users WHERE username = $1",
         login_req.username
     )
     .fetch_optional(&state.db)
@@ -182,9 +183,13 @@ async fn login(
 
     // Update last login
     let now = Utc::now().to_rfc3339();
-    sqlx::query!("UPDATE users SET last_login = ? WHERE id = ?", now, user.id)
-        .execute(&state.db)
-        .await?;
+    sqlx::query!(
+        "UPDATE users SET last_login = $1 WHERE id = $2",
+        now,
+        user.id
+    )
+    .execute(&state.db)
+    .await?;
 
     // Generate JWT token
     let claims = Claims {
@@ -216,7 +221,7 @@ async fn register(
 ) -> Result<Json<AuthResponse>, AppError> {
     // Check if user already exists
     let existing_user = sqlx::query!(
-        "SELECT id FROM users WHERE username = ?",
+        "SELECT id FROM users WHERE username = $1",
         register_req.username
     )
     .fetch_optional(&state.db)
@@ -230,12 +235,12 @@ async fn register(
     let password_hash = hash(register_req.password, DEFAULT_COST)
         .map_err(|_| AppError::Internal("Password hashing failed".to_string()))?;
 
-    let user_id = uuid::Uuid::new_v4().to_string();
+    let user_id = uuid::Uuid::new_v4();
     let now = Utc::now().to_rfc3339();
 
     // Create user
     sqlx::query!(
-        "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)",
+        "INSERT INTO users (id, username, password_hash, created_at) VALUES ($1, $2, $3, $4)",
         user_id,
         register_req.username,
         password_hash,
@@ -246,7 +251,7 @@ async fn register(
 
     // Generate JWT token
     let claims = Claims {
-        user_id: user_id.clone(),
+        user_id: user_id.to_string(),
         username: register_req.username.clone(),
         exp: (Utc::now().timestamp() + 24 * 60 * 60) as usize, // 24 hours
     };
@@ -260,7 +265,7 @@ async fn register(
 
     Ok(Json(AuthResponse {
         user: UserInfo {
-            id: user_id,
+            id: user_id.to_string(),
             username: register_req.username,
             last_login: None,
         },
@@ -272,33 +277,30 @@ async fn create_purchase(
     State(state): State<AppState>,
     Json(purchase): Json<CreatePurchaseRequest>,
 ) -> Result<Json<Purchase>, AppError> {
-    let purchase_id = uuid::Uuid::new_v4().to_string();
-
-    let price_str = purchase.price_per_share.to_string();
-    let commission_str = purchase.commission.to_string();
+    let purchase_id = uuid::Uuid::new_v4();
 
     let row = sqlx::query!(
         r#"
         INSERT INTO purchases (id, symbol, quantity, price_per_share, commission, purchase_date)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id, symbol, quantity, price_per_share, commission, purchase_date
         "#,
         purchase_id,
         purchase.symbol,
         purchase.quantity,
-        price_str,
-        commission_str,
+        purchase.price_per_share,
+        purchase.commission,
         purchase.purchase_date
     )
     .fetch_one(&state.db)
     .await?;
 
     let purchase = Purchase {
-        id: row.id.unwrap_or_default(),
+        id: row.id.unwrap_or_default().to_string(),
         symbol: row.symbol,
         quantity: row.quantity,
-        price_per_share: rust_decimal::Decimal::from_str(&row.price_per_share.to_string()).unwrap(),
-        commission: rust_decimal::Decimal::from_str(&row.commission.to_string()).unwrap(),
+        price_per_share: row.price_per_share.unwrap_or_default(),
+        commission: row.commission.unwrap_or_default(),
         purchase_date: row.purchase_date,
     };
 
@@ -315,12 +317,11 @@ async fn get_purchases(State(state): State<AppState>) -> Result<Json<Vec<Purchas
     let purchases: Vec<Purchase> = rows
         .into_iter()
         .map(|row| Purchase {
-            id: row.id.unwrap_or_default(),
+            id: row.id.unwrap_or_default().to_string(),
             symbol: row.symbol,
             quantity: row.quantity,
-            price_per_share: rust_decimal::Decimal::from_str(&row.price_per_share.to_string())
-                .unwrap(),
-            commission: rust_decimal::Decimal::from_str(&row.commission.to_string()).unwrap(),
+            price_per_share: row.price_per_share.unwrap_or_default(),
+            commission: row.commission.unwrap_or_default(),
             purchase_date: row.purchase_date,
         })
         .collect();
@@ -342,7 +343,7 @@ async fn get_dashboard(State(state): State<AppState>) -> Result<Json<DashboardDa
     for row in purchases {
         let symbol = row.symbol;
         let quantity = rust_decimal::Decimal::new(row.total_quantity.into(), 0);
-        let spent = rust_decimal::Decimal::from_str(&row.total_spent.to_string()).unwrap();
+        let spent = row.total_spent.unwrap_or_default();
 
         total_spent += spent;
 
@@ -397,7 +398,7 @@ async fn get_stock_details(
     State(state): State<AppState>,
 ) -> Result<Json<StockDetails>, AppError> {
     let purchases = sqlx::query!(
-        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE symbol = ? ORDER BY purchase_date DESC",
+        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE symbol = $1 ORDER BY purchase_date DESC",
         symbol
     )
     .fetch_all(&state.db)
@@ -406,12 +407,11 @@ async fn get_stock_details(
     let purchases: Vec<Purchase> = purchases
         .into_iter()
         .map(|row| Purchase {
-            id: row.id.unwrap_or_default(),
+            id: row.id.unwrap_or_default().to_string(),
             symbol: row.symbol,
             quantity: row.quantity,
-            price_per_share: rust_decimal::Decimal::from_str(&row.price_per_share.to_string())
-                .unwrap(),
-            commission: rust_decimal::Decimal::from_str(&row.commission.to_string()).unwrap(),
+            price_per_share: row.price_per_share.unwrap_or_default(),
+            commission: row.commission.unwrap_or_default(),
             purchase_date: row.purchase_date,
         })
         .collect();
@@ -464,7 +464,7 @@ async fn get_stock_chart(
 
     // Get purchase dates for this symbol
     let purchase_dates = sqlx::query!(
-        "SELECT purchase_date, price_per_share FROM purchases WHERE symbol = ?",
+        "SELECT purchase_date, price_per_share FROM purchases WHERE symbol = $1",
         symbol
     )
     .fetch_all(&state.db)
@@ -474,7 +474,7 @@ async fn get_stock_chart(
         .into_iter()
         .map(|row| PurchasePoint {
             date: row.purchase_date,
-            price: rust_decimal::Decimal::from_str(&row.price_per_share.to_string()).unwrap(),
+            price: row.price_per_share.unwrap_or_default(),
         })
         .collect();
 

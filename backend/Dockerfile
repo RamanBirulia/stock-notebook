@@ -1,63 +1,76 @@
-# Use the official Rust image as the base image
-FROM rust:1.88-slim-bullseye AS builder
+# Multi-stage production Dockerfile for Stock Notebook Backend
+FROM rust:1.75-slim-bullseye AS builder
 
-# Install required system dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# Create app directory
 WORKDIR /app
 
-# Copy Cargo.toml and Cargo.lock
+# Copy dependency files first for better caching
 COPY Cargo.toml Cargo.lock ./
 
-# Copy the source code
+# Create a dummy main.rs to build dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Build dependencies (this will be cached if Cargo.toml doesn't change)
+RUN cargo build --release && rm -rf src
+
+# Copy source code and migrations
 COPY src ./src
 COPY migrations ./migrations
 
-# Copy SQLx prepared queries
-COPY .sqlx ./.sqlx
-
-# Set SQLx to offline mode and build the application
-ENV SQLX_OFFLINE=true
+# Build the application in release mode with SQLx online mode
+# Note: This requires a database connection during build in CI/CD
+# For offline builds, regenerate .sqlx with: cargo sqlx prepare
 RUN cargo build --release
 
-# Runtime stage
-FROM debian:bullseye-slim
+# Production runtime stage
+FROM debian:bullseye-slim AS production
 
-# Install runtime dependencies
+# Install runtime dependencies and security updates
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl1.1 \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    tini \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Create app user
-RUN useradd -r -s /bin/false -m -d /app app
+# Create non-root user for security
+RUN groupadd -r app && useradd -r -g app -d /app -s /sbin/nologin app
 
 # Set working directory
 WORKDIR /app
 
 # Copy the binary from builder stage
-COPY --from=builder /app/target/release/stock-tracker-backend /app/stock-tracker-backend
+COPY --from=builder /app/target/release/stock-tracker-backend ./stock-tracker-backend
 
-# Copy migrations
-COPY --from=builder /app/migrations /app/migrations
+# Copy migrations directory
+COPY --from=builder /app/migrations ./migrations
 
-# Change ownership
-RUN chown -R app:app /app
+# Set proper ownership and permissions
+RUN chown -R app:app /app && \
+    chmod +x /app/stock-tracker-backend
 
-# Switch to app user
+# Switch to non-root user
 USER app
 
-# Expose port
+# Expose the application port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Command to run the application
+# Use tini as init system for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Start the application
 CMD ["./stock-tracker-backend"]

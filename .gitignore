@@ -27,6 +27,11 @@ out/
 .env.test.local
 .env.production.local
 
+# SQLx prepared queries (uncomment to ignore)
+# .sqlx/
+# Note: Include .sqlx in version control for offline builds
+# Exclude .sqlx if you prefer online compilation only
+
 # Database files
 *.db
 *.sqlite

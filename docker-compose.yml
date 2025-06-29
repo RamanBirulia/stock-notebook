@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: stock-notebook-postgres
+    environment:
+      POSTGRES_DB: stock_notebook
+      POSTGRES_USER: stock_user
+      POSTGRES_PASSWORD: stock_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - stock-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stock_user -d stock_notebook"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: stock-notebook-adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - stock-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: hydra
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock-notebook-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://stock_user:stock_password@postgres:5432/stock_notebook
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      RUST_LOG: info
+      PORT: 8080
+      FRONTEND_URL: http://localhost:3000
+      ENABLE_API_REQUEST_LOGGING: "false"
+      ENABLE_API_RESPONSE_LOGGING: "false"
+    networks:
+      - stock-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./backend/src:/app/src:ro
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/src
+        - action: rebuild
+          path: ./backend/Cargo.toml
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  stock-network:
+    driver: bridge

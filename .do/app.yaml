@@ -1,4 +1,4 @@
-name: stock-tracker
+name: stock-notebook
 region: nyc1
 
 services:
@@ -11,12 +11,12 @@ services:
     dockerfile_path: backend/Dockerfile
     http_port: 8080
     instance_count: 1
-    instance_size_slug: basic-xxs
+    instance_size_slug: basic-xs
     health_check:
       http_path: /health
       initial_delay_seconds: 60
-      period_seconds: 10
-      timeout_seconds: 5
+      period_seconds: 30
+      timeout_seconds: 10
       failure_threshold: 3
       success_threshold: 1
     envs:
@@ -27,7 +27,7 @@ services:
       - key: JWT_SECRET
         scope: RUN_TIME
         type: SECRET
-        value: teLzWxpHqg6uUoh4aFE/+/R96yLYdFt2DW5i96rSb6o=
+        value: ${JWT_SECRET}
       - key: FRONTEND_URL
         scope: RUN_TIME
         value: ${APP_URL}
@@ -36,26 +36,51 @@ services:
         value: "8080"
       - key: RUST_LOG
         scope: RUN_TIME
-        value: info
+        value: warn
+      - key: ENVIRONMENT
+        scope: RUN_TIME
+        value: production
+      - key: ENABLE_API_REQUEST_LOGGING
+        scope: RUN_TIME
+        value: "false"
+      - key: ENABLE_API_RESPONSE_LOGGING
+        scope: RUN_TIME
+        value: "false"
+      - key: SQLX_MAX_CONNECTIONS
+        scope: RUN_TIME
+        value: "20"
+      - key: SQLX_MIN_CONNECTIONS
+        scope: RUN_TIME
+        value: "5"
+      - key: SQLX_ACQUIRE_TIMEOUT
+        scope: RUN_TIME
+        value: "30"
+      - key: SQLX_IDLE_TIMEOUT
+        scope: RUN_TIME
+        value: "600"
+      - key: SQLX_MAX_LIFETIME
+        scope: RUN_TIME
+        value: "1800"
     routes:
       - path: /api
       - path: /health
 
-static_sites:
-  - name: frontend
-    source_dir: /frontend
-    github:
-      repo: RamanBirulia/stock-notebook
-      branch: main
-      deploy_on_push: true
-    build_command: |
-      npm ci --production=false
-      REACT_APP_API_URL=${APP_URL} npm run build
-    output_dir: /build
-    index_document: index.html
-    routes:
-      - path: /
-    catchall_document: index.html
+# Frontend configuration (remove this section if you don't have a React frontend)
+# static_sites:
+#   - name: frontend
+#     source_dir: /frontend
+#     github:
+#       repo: RamanBirulia/stock-notebook
+#       branch: main
+#       deploy_on_push: true
+#     build_command: |
+#       npm ci --production=false
+#       REACT_APP_API_URL=${APP_URL} npm run build
+#     output_dir: /build
+#     index_document: index.html
+#     routes:
+#       - path: /
+#     catchall_document: index.html
 
 databases:
   - engine: PG

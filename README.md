@@ -1,213 +1,421 @@
-# Stock Tracker
+# Stock Notebook - Portfolio Tracking Application
 
-A comprehensive stock portfolio tracking application built with React and Rust.
+A modern web application for tracking stock portfolios built with Rust (Axum) backend and PostgreSQL database.
 
 ## Features
 
-### ✅ Authentication System
-- **User Registration & Login**: Secure JWT-based authentication
-- **Protected Routes**: All portfolio data is user-specific and protected
-- **Landing Page**: Attractive demo for unauthorized users with comics-style layout
-- **Session Persistence**: Automatic login on return visits
+- 🔐 **User Authentication** - Secure JWT-based authentication
+- 📊 **Portfolio Dashboard** - Real-time portfolio value and performance tracking
+- 📈 **Stock Price Integration** - Live stock prices via Yahoo Finance API
+- 💰 **Purchase Tracking** - Record and manage stock purchases
+- 📉 **Chart Visualization** - Interactive price charts with purchase markers
+- 🔍 **Symbol Search** - Smart stock symbol search and suggestions
+- 🏦 **Commission Tracking** - Include trading fees in calculations
+- 💹 **Profit/Loss Analysis** - Detailed performance metrics
 
-### 📊 Portfolio Management
-- **Real-time Stock Data**: Live market prices and portfolio valuation
-- **Purchase Tracking**: Record and manage all stock transactions
-- **Profit/Loss Analysis**: Comprehensive performance metrics
-- **Interactive Charts**: Visual representation of stock performance
+## Technology Stack
 
-### 🎨 User Experience
-- **Responsive Design**: Works perfectly on desktop and mobile
-- **Dark/Light Theme**: Toggle between themes with system preference detection
-- **Internationalization**: Multi-language support (English/Spanish)
-- **Modern UI**: Clean, professional interface with smooth animations
+- **Backend**: Rust with Axum framework
+- **Database**: PostgreSQL with SQLx
+- **Authentication**: JWT tokens with bcrypt password hashing
+- **Stock Data**: Yahoo Finance API
+- **Deployment**: Docker with Docker Compose
+- **Web Server**: Nginx (production)
 
-## Tech Stack
-
-### Frontend
-- **React 19** with TypeScript
-- **Redux Toolkit** for state management
-- **RTK Query** for API calls and caching
-- **TailwindCSS** for styling
-- **React Router** for navigation
-- **Chart.js** for interactive charts
-- **i18next** for internationalization
-
-### Backend
-- **Rust** with Axum web framework
-- **SQLite** database with SQLx
-- **JWT** for authentication
-- **bcrypt** for password hashing
-- **Alpha Vantage API** for stock data
-
-## Quick Start
+## Quick Start (Development)
 
 ### Prerequisites
-- Node.js 18+
-- Rust 1.70+
-- Alpha Vantage API key (free)
+
+- Docker and Docker Compose
+- Rust 1.75+ (for local development)
 
 ### Setup
 
-1. **Clone the repository**
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd stock-notebook
+
+# Quick setup with Docker
+docker compose up -d
+
+# Or use the automated setup script
+./scripts/dev-setup.sh
+
+# Add sample data
+./scripts/seed-db.sh
+```
+
+### Access the Application
+
+- **API**: http://localhost:8080
+- **Database Admin**: http://localhost:8081 (Adminer)
+- **Health Check**: http://localhost:8080/health
+
+### Demo Credentials
+
+- **Username**: `demo_user`
+- **Password**: `password123`
+
+## Production Deployment
+
+### Digital Ocean Deployment
+
+#### Prerequisites
+
+- Digital Ocean Droplet (Ubuntu 20.04+ or Debian 11+)
+- Domain name pointing to your droplet IP
+- SSH key access to the droplet
+
+#### Quick Deploy
+
+```bash
+# Initial deployment (installs Docker, sets up environment)
+./deploy-digital-ocean.sh --initial YOUR_DROPLET_IP
+
+# Update your environment variables
+ssh root@YOUR_DROPLET_IP
+cd /opt/stock-notebook
+nano .env  # Update with your production values
+
+# Complete the deployment
+./deploy-digital-ocean.sh --update YOUR_DROPLET_IP
+
+# Setup SSL certificates (optional but recommended)
+./deploy-digital-ocean.sh --ssl YOUR_DROPLET_IP
+```
+
+#### Manual Deployment Steps
+
+1. **Prepare the Droplet**
    ```bash
-   git clone <repository-url>
-   cd stock-notebook
+   # Connect to your droplet
+   ssh root@YOUR_DROPLET_IP
+   
+   # Update system
+   apt update && apt upgrade -y
+   
+   # Install Docker
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sh get-docker.sh
    ```
 
-2. **Backend Setup**
+2. **Deploy the Application**
    ```bash
-   cd backend
-
-   # Set environment variables
-   export DATABASE_URL="sqlite:stocks.db"
-   export ALPHA_VANTAGE_API_KEY="your-api-key"
-   export JWT_SECRET="your-jwt-secret"
-
-   # Run the backend
-   cargo run
+   # Create deployment directory
+   mkdir -p /opt/stock-notebook
+   cd /opt/stock-notebook
+   
+   # Copy your application files
+   # (Use scp, git clone, or the deployment script)
+   
+   # Create production environment file
+   cp .env.production .env
+   nano .env  # Update with your values
    ```
 
-3. **Frontend Setup**
+3. **Start Services**
    ```bash
-   cd frontend
-
-   # Install dependencies
-   npm install
-
-   # Start development server
-   npm start
+   # Start with production configuration
+   docker compose -f docker-compose.prod.yml up -d
+   
+   # Check status
+   docker compose -f docker-compose.prod.yml ps
    ```
 
-4. **Access the Application**
-   - Open http://localhost:3000
-   - Create an account or login
-   - Start tracking your portfolio!
+### Environment Configuration
 
-## Authentication System
+#### Required Environment Variables
 
-The application features a complete authentication system:
+```env
+# Database
+POSTGRES_DB=stock_notebook_prod
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_strong_password
+DATABASE_URL=postgresql://user:password@postgres:5432/database
 
-### For New Users
-1. **Landing Page**: See a demo of the dashboard and form components
-2. **Registration**: Create an account with username/password
-3. **Automatic Login**: Immediately access your personal dashboard
+# Security
+JWT_SECRET=your-very-strong-jwt-secret-key-here
 
-### For Returning Users
-- **Automatic Authentication**: Stay logged in across browser sessions
-- **Secure Access**: All data is protected and user-specific
-- **Easy Logout**: Sign out from the header menu
+# Application
+FRONTEND_URL=https://yourdomain.com
+ENVIRONMENT=production
+RUST_LOG=warn
+```
 
-### Landing Page Features
-- **Demo Dashboard**: Real portfolio components with sample data
-- **Demo Form**: Stock purchase form showing the input process
-- **Comics-Style Layout**: Playful design with hand-drawn elements
-- **Feature Showcase**: Interactive cards explaining app capabilities
+#### Security Checklist
+
+- [ ] Change default database passwords
+- [ ] Set strong JWT_SECRET (32+ characters)
+- [ ] Configure firewall (ports 80, 443, 22 only)
+- [ ] Enable fail2ban for SSH protection
+- [ ] Setup SSL certificates
+- [ ] Configure regular backups
+- [ ] Enable log rotation
+
+### SSL/HTTPS Setup
+
+#### Using Let's Encrypt (Recommended)
+
+```bash
+# Automated SSL setup
+./deploy-digital-ocean.sh --ssl YOUR_DROPLET_IP
+
+# Manual setup
+ssh root@YOUR_DROPLET_IP
+apt install certbot python3-certbot-nginx
+certbot certonly --standalone -d yourdomain.com
+```
+
+#### Using Custom Certificates
+
+```bash
+# Copy your certificates to the droplet
+scp your-cert.pem root@YOUR_DROPLET_IP:/opt/stock-notebook/ssl/cert.pem
+scp your-key.pem root@YOUR_DROPLET_IP:/opt/stock-notebook/ssl/key.pem
+```
 
 ## API Documentation
 
 ### Authentication Endpoints
-- `POST /api/auth/register` - Create new user account
-- `POST /api/auth/login` - Authenticate and get JWT token
 
-### Protected Endpoints (require JWT token)
-- `GET /api/dashboard` - Portfolio overview with profit/loss
-- `GET /api/purchases` - List all stock purchases
-- `POST /api/purchases` - Add new stock purchase
-- `GET /api/stock/:symbol` - Detailed stock information
-- `GET /api/stock/:symbol/chart` - Stock price chart data
+```
+POST /api/auth/register  - Register new user
+POST /api/auth/login     - Login user
+```
+
+### Portfolio Endpoints
+
+```
+GET  /api/dashboard      - Get portfolio summary
+GET  /api/purchases      - Get all purchases
+POST /api/purchases      - Add new purchase
+```
+
+### Stock Data Endpoints
+
+```
+GET  /api/stock/:symbol        - Get stock details
+GET  /api/stock/:symbol/chart  - Get price chart data
+GET  /api/symbols/search       - Search stock symbols
+```
+
+### Admin Endpoints
+
+```
+GET  /api/admin/cache/stats   - Cache statistics
+POST /api/admin/cache/clear   - Clear all cache
+POST /api/admin/cache/cleanup - Cleanup expired cache
+```
 
 ## Development
 
-### Database Migrations
-Migrations run automatically on backend startup. The database includes:
-- `users` table for authentication
-- `purchases` table for stock transactions
+### Development Commands
 
-### Environment Variables
 ```bash
-# Backend (.env)
-DATABASE_URL=sqlite:stocks.db
-ALPHA_VANTAGE_API_KEY=your_api_key_here
-JWT_SECRET=your_jwt_secret_here
+# Using Makefile
+make setup     # Complete development setup
+make up        # Start all services
+make down      # Stop services
+make logs      # View logs
+make test      # Run tests
+make migrate   # Run database migrations
+make seed      # Add sample data
 
-# Frontend (handled by proxy)
-REACT_APP_API_URL=http://localhost:8080
-```
-
-### Security Features
-- **Password Hashing**: bcrypt with 12 rounds
-- **JWT Tokens**: 24-hour expiration
-- **Protected Routes**: Middleware validation
-- **CORS**: Properly configured for frontend
-
-## Deployment
-
-This application is ready for deployment to Digital Ocean App Platform with comprehensive guides:
-
-### 🚀 Quick Deploy (30 minutes)
-See [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for a streamlined deployment guide:
-- Get API key and setup
-- Deploy with 5 simple steps
-- Cost: ~$12/month (free with trial credits)
-
-### 📚 Complete Deployment Guide
-See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive documentation:
-- Detailed setup instructions
-- Environment configuration
-- Monitoring and scaling
-- Troubleshooting guide
-- Security best practices
-
-### 🛠️ Automated Helper Script
-Use the deployment helper script:
-```bash
-./deploy.sh --help
-```
-
-### Manual Deployment
-
-#### Frontend
-```bash
-cd frontend
-npm run build
-# Deploy 'build' folder to static hosting
-```
-
-#### Backend
-```bash
+# Manual commands
 cd backend
-cargo build --release
-# Deploy binary with environment variables
+cargo run      # Start backend server
+cargo test     # Run tests
 ```
 
-#### Digital Ocean App Platform Features
-- ✅ Automatic builds from Git
-- ✅ Environment variable configuration  
-- ✅ SSL certificate handling
-- ✅ PostgreSQL database with backups
-- ✅ Auto-scaling and monitoring
-- ✅ Custom domains support
+### Database Management
+
+```bash
+# Connect to database
+make db-connect
+
+# Create migration
+cd backend
+sqlx migrate add migration_name
+
+# Run migrations
+sqlx migrate run
+```
+
+### Adding New Features
+
+1. **Backend Changes**
+   - Add routes in `src/main.rs`
+   - Add models in `src/models.rs`
+   - Add business logic in appropriate modules
+
+2. **Database Changes**
+   - Create migration: `sqlx migrate add feature_name`
+   - Update models if needed
+   - Test with development database
+
+3. **Testing**
+   ```bash
+   cargo test
+   cargo clippy
+   cargo fmt
+   ```
+
+## Monitoring and Maintenance
+
+### Health Monitoring
+
+```bash
+# Check service status
+./deploy-digital-ocean.sh --status YOUR_DROPLET_IP
+
+# View logs
+./deploy-digital-ocean.sh --logs YOUR_DROPLET_IP
+
+# Check health endpoint
+curl https://yourdomain.com/health
+```
+
+### Backup and Recovery
+
+```bash
+# Create backup
+./deploy-digital-ocean.sh --backup YOUR_DROPLET_IP
+
+# Manual database backup
+docker compose exec postgres pg_dump -U user database > backup.sql
+
+# Restore from backup
+docker compose exec -T postgres psql -U user database < backup.sql
+```
+
+### Updates and Rollbacks
+
+```bash
+# Update to latest version
+./deploy-digital-ocean.sh --update YOUR_DROPLET_IP
+
+# Rollback if needed
+./deploy-digital-ocean.sh --rollback YOUR_DROPLET_IP
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Database Connection Issues
+```bash
+# Check PostgreSQL status
+docker compose exec postgres pg_isready -U user -d database
+
+# Check logs
+docker compose logs postgres
+```
+
+#### API Not Responding
+```bash
+# Check backend logs
+docker compose logs backend
+
+# Check if port is accessible
+curl http://localhost:8080/health
+```
+
+#### SSL Certificate Issues
+```bash
+# Renew Let's Encrypt certificates
+certbot renew
+
+# Check certificate expiry
+openssl x509 -in /path/to/cert.pem -text -noout
+```
+
+### Performance Tuning
+
+#### Database Optimization
+```sql
+-- Check slow queries
+SELECT query, mean_time, calls 
+FROM pg_stat_statements 
+ORDER BY mean_time DESC 
+LIMIT 10;
+
+-- Analyze table statistics
+ANALYZE purchases;
+ANALYZE users;
+```
+
+#### Application Optimization
+- Monitor memory usage with `docker stats`
+- Adjust connection pool settings in `.env`
+- Enable query caching for frequently accessed data
+- Use CDN for static assets
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Add tests
 5. Submit a pull request
+
+### Development Setup
+
+```bash
+git clone <your-fork>
+cd stock-notebook
+./scripts/dev-setup.sh
+make test
+```
 
 ## License
 
-This project is licensed under the MIT License.
+[Your License Here]
 
 ## Support
 
-For issues and questions:
-1. Check the [Authentication Setup Guide](AUTHENTICATION_SETUP.md)
-2. Review the [Development Roadmap](DEVELOPMENT_ROADMAP.md)
-3. Open an issue on GitHub
+- **Issues**: GitHub Issues
+- **Documentation**: See `/docs` directory
+- **Health Check**: `https://yourdomain.com/health`
 
 ---
 
-**Note**: This application is for educational and personal use. Always verify stock data with official sources before making investment decisions.
+## Architecture Overview
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     Nginx       │    │   Rust Backend  │    │   PostgreSQL    │
+│   (Reverse      │────│   (Axum API)    │────│   (Database)    │
+│    Proxy)       │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+    ┌─────────┐            ┌─────────┐            ┌─────────┐
+    │   SSL   │            │   JWT   │            │ Migrations│
+    │ Termination│          │  Auth   │            │ & Backups │
+    └─────────┘            └─────────┘            └─────────┘
+```
+
+## Project Structure
+
+```
+stock-notebook/
+├── backend/                 # Rust backend application
+│   ├── src/
+│   │   ├── main.rs         # Main application entry point
+│   │   ├── models.rs       # Data models
+│   │   └── stock_api.rs    # Stock API integration
+│   ├── migrations/         # Database migrations
+│   └── Dockerfile          # Backend container image
+├── nginx/                  # Nginx configuration
+│   ├── nginx.conf          # Main nginx config
+│   └── conf.d/             # Server configurations
+├── scripts/                # Deployment and utility scripts
+│   ├── dev-setup.sh        # Development environment setup
+│   └── seed-db.sh          # Database seeding
+├── docker-compose.yml      # Development services
+├── docker-compose.prod.yml # Production services
+└── deploy-digital-ocean.sh # Digital Ocean deployment
+```
+
+Built with ❤️ using Rust and PostgreSQL
