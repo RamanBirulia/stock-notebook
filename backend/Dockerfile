@@ -1,5 +1,5 @@
 # Use the official Rust image as the base image
-FROM rust:1.75-slim-bullseye as builder
+FROM rust:1.88-slim-bullseye as builder
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
