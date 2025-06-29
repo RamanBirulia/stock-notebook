@@ -5,7 +5,7 @@ services:
   - name: backend
     source_dir: /backend
     github:
-      repo: your-username/stock-notebook
+      repo: RamanBirulia/stock-notebook
       branch: main
       deploy_on_push: true
     dockerfile_path: backend/Dockerfile
@@ -24,14 +24,10 @@ services:
         scope: RUN_TIME
         type: SECRET
         value: ${main-db.DATABASE_URL}
-      - key: ALPHA_VANTAGE_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-        value: YOUR_ALPHA_VANTAGE_API_KEY_HERE
       - key: JWT_SECRET
         scope: RUN_TIME
         type: SECRET
-        value: YOUR_JWT_SECRET_HERE
+        value: teLzWxpHqg6uUoh4aFE/+/R96yLYdFt2DW5i96rSb6o=
       - key: FRONTEND_URL
         scope: RUN_TIME
         value: ${frontend.PUBLIC_URL}
@@ -49,7 +45,7 @@ static_sites:
   - name: frontend
     source_dir: /frontend
     github:
-      repo: your-username/stock-notebook
+      repo: RamanBirulia/stock-notebook
       branch: main
       deploy_on_push: true
     build_command: |
