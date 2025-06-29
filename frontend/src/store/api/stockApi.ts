@@ -105,7 +105,9 @@ export type ChartPeriod = "1M" | "1Y" | "5Y";
 export const stockApi = createApi({
   reducerPath: "stockApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "/api",
+    baseUrl: process.env.REACT_APP_API_URL
+      ? `${process.env.REACT_APP_API_URL}/api`
+      : "/api",
     prepareHeaders: (headers, { getState }) => {
       headers.set("Content-Type", "application/json");
 

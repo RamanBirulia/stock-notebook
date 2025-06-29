@@ -30,7 +30,7 @@ services:
         value: teLzWxpHqg6uUoh4aFE/+/R96yLYdFt2DW5i96rSb6o=
       - key: FRONTEND_URL
         scope: RUN_TIME
-        value: ${frontend.PUBLIC_URL}
+        value: ${APP_URL}
       - key: PORT
         scope: RUN_TIME
         value: "8080"
@@ -50,7 +50,7 @@ static_sites:
       deploy_on_push: true
     build_command: |
       npm ci --production=false
-      REACT_APP_API_URL=${backend.PUBLIC_URL} npm run build
+      REACT_APP_API_URL=${APP_URL} npm run build
     output_dir: /build
     index_document: index.html
     routes:
@@ -62,4 +62,4 @@ databases:
     name: main-db
     num_nodes: 1
     size: db-s-dev-database
-    version: "14"
+    version: "16"
