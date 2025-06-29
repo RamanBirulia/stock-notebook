@@ -1,5 +1,5 @@
 # Use the official Rust image as the base image
-FROM rust:1.88-slim-bullseye as builder
+FROM rust:1.88-slim-bullseye AS builder
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,7 +18,11 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY migrations ./migrations
 
-# Build the application
+# Copy SQLx prepared queries
+COPY .sqlx ./.sqlx
+
+# Set SQLx to offline mode and build the application
+ENV SQLX_OFFLINE=true
 RUN cargo build --release
 
 # Runtime stage
@@ -53,7 +57,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # Command to run the application
 CMD ["./stock-tracker-backend"]
