@@ -1,0 +1,156 @@
+{
+  "name": "Stock Portfolio Tracker",
+  "short_name": "Stock Notebook",
+  "description": "Track your stock portfolio with real-time data, performance analytics, and comprehensive investment monitoring",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1f2937",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-57x57.png",
+      "sizes": "57x57",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-60x60.png",
+      "sizes": "60x60",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-76x76.png",
+      "sizes": "76x76",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-114x114.png",
+      "sizes": "114x114",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-120x120.png",
+      "sizes": "120x120",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your portfolio dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/apple-touch-icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Add Purchase",
+      "short_name": "Add Purchase",
+      "description": "Add a new stock purchase",
+      "url": "/purchases/new",
+      "icons": [
+        {
+          "src": "/apple-touch-icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "View portfolio analytics",
+      "url": "/analytics",
+      "icons": [
+        {
+          "src": "/apple-touch-icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Portfolio Dashboard Desktop View"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Portfolio Dashboard Mobile View"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  }
+}

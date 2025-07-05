@@ -1,0 +1,79 @@
+# Robots.txt for Stock Portfolio Tracker
+# https://stock-notebook.com/robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow private/sensitive areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /tmp/
+
+# Allow important pages
+Allow: /dashboard
+Allow: /login
+Allow: /register
+Allow: /about
+Allow: /features
+Allow: /help
+
+# Block common bot paths
+Disallow: /cgi-bin/
+Disallow: /*.php$
+Disallow: /*.asp$
+Disallow: /*.aspx$
+Disallow: /*.jsp$
+
+# Block search parameters
+Disallow: /*?*
+Disallow: /*&*
+
+# Block development files
+Disallow: /src/
+Disallow: /build/
+Disallow: /node_modules/
+Disallow: /*.map$
+Disallow: /*.log$
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://stock-notebook.com/sitemap.xml
+
+# Popular search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Block aggressive crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

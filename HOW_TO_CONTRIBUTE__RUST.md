@@ -20,7 +20,7 @@ src/
   config/             // config loading and schema
   utils/              // helpers (pure logic only)
 tests/                // integration tests
-migrations/           // DB migrations (if using SQLx or Diesel)
+migrations/           // DB migrations
 ```
 
 ## Module Guidelines

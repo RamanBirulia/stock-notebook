@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { clsx } from "clsx";
 import { Search, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  useLazySearchSymbolsQuery,
-  type SymbolSuggestion,
-} from "../../store/api/stockApi";
+import { useLazySearchSymbolsQuery } from "../../store/api/stockApi";
+import { SymbolSuggestion } from "../../store/api/models";
 
 interface StockSymbolInputProps
   extends Omit<

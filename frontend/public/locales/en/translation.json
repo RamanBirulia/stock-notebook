@@ -39,8 +39,6 @@
   },
   "stock": {
     "details": {
-      "title": "Stock Details",
-      "backButton": "Back",
       "currentPrice": "Current Price",
       "metrics": {
         "totalShares": "Total Shares",
@@ -50,11 +48,7 @@
       },
       "chart": {
         "title": "Price Chart",
-        "periods": {
-          "1M": "1M",
-          "1Y": "1Y",
-          "5Y": "5Y"
-        }
+        "periods": {}
       },
       "purchaseHistory": {
         "title": "Purchase History",
@@ -73,10 +67,7 @@
         "loadingError": "Error loading stock data",
         "chartError": "Error loading chart data"
       },
-      "loading": {
-        "stock": "Loading stock data...",
-        "chart": "Loading chart..."
-      }
+      "loading": {}
     }
   },
   "chart": {
@@ -128,9 +119,7 @@
   },
   "stockSymbolInput": {
     "placeholder": "Search stocks (e.g., AAPL, GOOGL, MSFT)",
-    "searchError": "Failed to search symbols. Please try again.",
-    "noResults": "No symbols found",
-    "loading": "Searching..."
+    "searchError": "Failed to search symbols. Please try again."
   },
   "common": {
     "cancel": "Cancel",
@@ -290,7 +279,6 @@
           }
         },
         "dataSharing": {
-          "title": "Data Sharing Policy",
           "noSharing": "We DO NOT share your data. Period.",
           "text": "Your portfolio information is never sold, shared, or disclosed to third parties under any circumstances. No exceptions."
         },
@@ -428,12 +416,68 @@
     },
     "common": {
       "back": "Back",
-      "contactUs": "Contact Us",
-      "support": "Support",
-      "email": "Email"
+      "contactUs": "Contact Us"
     }
   },
-  "errors": {},
+  "errors": {
+    "404": {
+      "title": "TODO: Add translation for 'errors.404.title'",
+      "description": "TODO: Add translation for 'errors.404.description'",
+      "actions": {
+        "dashboard": {
+          "title": "TODO: Add translation for 'errors.404.actions.dashboard.title'",
+          "description": "TODO: Add translation for 'errors.404.actions.dashboard.description'",
+          "button": "TODO: Add translation for 'errors.404.actions.dashboard.button'"
+        },
+        "portfolio": {
+          "title": "TODO: Add translation for 'errors.404.actions.portfolio.title'",
+          "description": "TODO: Add translation for 'errors.404.actions.portfolio.description'",
+          "button": "TODO: Add translation for 'errors.404.actions.portfolio.button'"
+        },
+        "back": "TODO: Add translation for 'errors.404.actions.back'",
+        "home": "TODO: Add translation for 'errors.404.actions.home'"
+      },
+      "help": {
+        "title": "TODO: Add translation for 'errors.404.help.title'",
+        "documentation": "TODO: Add translation for 'errors.404.help.documentation'",
+        "contact": "TODO: Add translation for 'errors.404.help.contact'",
+        "email": "TODO: Add translation for 'errors.404.help.email'"
+      },
+      "footer": "TODO: Add translation for 'errors.404.footer'"
+    },
+    "500": {
+      "title": "TODO: Add translation for 'errors.500.title'",
+      "description": "TODO: Add translation for 'errors.500.description'",
+      "status": {
+        "title": "TODO: Add translation for 'errors.500.status.title'",
+        "description": "TODO: Add translation for 'errors.500.status.description'"
+      },
+      "actions": {
+        "retry": {
+          "title": "TODO: Add translation for 'errors.500.actions.retry.title'",
+          "description": "TODO: Add translation for 'errors.500.actions.retry.description'",
+          "button": "TODO: Add translation for 'errors.500.actions.retry.button'"
+        },
+        "report": {
+          "title": "TODO: Add translation for 'errors.500.actions.report.title'",
+          "description": "TODO: Add translation for 'errors.500.actions.report.description'",
+          "button": "TODO: Add translation for 'errors.500.actions.report.button'"
+        },
+        "back": "TODO: Add translation for 'errors.500.actions.back'",
+        "home": "TODO: Add translation for 'errors.500.actions.home'"
+      },
+      "technical": {
+        "title": "TODO: Add translation for 'errors.500.technical.title'"
+      },
+      "help": {
+        "title": "TODO: Add translation for 'errors.500.help.title'",
+        "documentation": "TODO: Add translation for 'errors.500.help.documentation'",
+        "contact": "TODO: Add translation for 'errors.500.help.contact'",
+        "status": "TODO: Add translation for 'errors.500.help.status'"
+      },
+      "footer": "TODO: Add translation for 'errors.500.footer'"
+    }
+  },
   "validation": {},
   "currency": {},
   "format": {},
@@ -492,6 +536,11 @@
         "yourRights": "Your Rights & Control",
         "questions": "Questions About Privacy?",
         "updates": "Policy Updates"
+      },
+      "content": {
+        "dataSharing": {
+          "title": "Data Sharing Policy"
+        }
       }
     },
     "termsOfService": {
@@ -517,5 +566,26 @@
       "support": "Support",
       "email": "Email"
     }
+  },
+  "__DEPRECATED__stock": {
+    "details": {
+      "title": "Stock Details",
+      "backButton": "Back",
+      "chart": {
+        "periods": {
+          "1M": "1M",
+          "1Y": "1Y",
+          "5Y": "5Y"
+        }
+      },
+      "loading": {
+        "stock": "Loading stock data...",
+        "chart": "Loading chart..."
+      }
+    }
+  },
+  "__DEPRECATED__stockSymbolInput": {
+    "noResults": "No symbols found",
+    "loading": "Searching..."
   }
 }

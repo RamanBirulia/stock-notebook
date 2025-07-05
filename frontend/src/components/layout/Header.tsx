@@ -9,15 +9,24 @@ import ThemeToggle from "../ui/ThemeToggle";
 import LanguageSelector from "./LanguageSelector";
 import { Button } from "../ui/Button";
 
+import { useI18nReady } from "../../hooks/i18n/useI18nReady";
+import { SkeletonDashboardHeader } from "../ui/loading/SkeletonHeader";
+
 export const Header: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const { isReady } = useI18nReady();
 
   const handleLogout = () => {
     dispatch(logout());
   };
+
+  // Show skeleton while i18n is loading
+  if (!isReady) {
+    return <SkeletonDashboardHeader />;
+  }
 
   const navigation = [
     {

@@ -14,7 +14,7 @@ import { Line } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 
-import { ChartData } from "../../store/api/stockApi";
+import { ChartData } from "../../store/api/models";
 
 ChartJS.register(
   CategoryScale,

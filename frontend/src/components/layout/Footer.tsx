@@ -9,14 +9,14 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand Section */}
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2 mb-6 sm:mb-0">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
               {t("footer.brand.name")}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 max-w-md">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 sm:mb-4 max-w-md pr-4">
               {t("footer.brand.description")}
             </p>
             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -27,11 +27,11 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+          <div className="mb-6 sm:mb-0">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4">
               {t("footer.features.title")}
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               <li>
                 <span className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
                   {t("footer.features.portfolioTracking")}
@@ -56,11 +56,11 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Connect Section */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+          <div className="mb-6 sm:mb-0">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4">
               {t("footer.connect.title")}
             </h4>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 sm:space-x-4">
               <button
                 type="button"
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -87,13 +87,13 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
               © {currentYear} {t("footer.brand.name")}.{" "}
               {t("footer.legal.copyright")}
             </div>
-            <div className="flex space-x-6 mt-4 md:mt-0">
+            <div className="flex flex-wrap justify-center sm:justify-end space-x-4 sm:space-x-6">
               <Link
                 to="/privacy-policy"
                 className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -119,8 +119,8 @@ export const Footer: React.FC = () => {
 
       {/* Disclaimer */}
       <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed px-2">
             <strong>{t("footer.disclaimer.title")}</strong>{" "}
             {t("footer.disclaimer.text")}
           </p>

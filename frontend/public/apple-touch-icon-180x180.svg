@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  
+      <rect width="100%" height="100%" fill="#1f2937" rx="18"/>
+
+      <!-- Main Icon -->
+      <circle cx="90" cy="90" r="54" fill="#10b981" opacity="0.2"/>
+      <text x="90" y="90" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="43.2" font-weight="bold">📈</text>
+
+      <!-- Corner Elements -->
+      <circle cx="144" cy="36" r="9" fill="#10b981" opacity="0.6"/>
+      <circle cx="36" cy="144" r="9" fill="#10b981" opacity="0.6"/>
+    
+</svg>

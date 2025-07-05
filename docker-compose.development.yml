@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: stock-notebook-postgres-dev
+    environment:
+      POSTGRES_DB: stock_notebook
+      POSTGRES_USER: stock_user
+      POSTGRES_PASSWORD: stock_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./backend/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - stock-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stock_user -d stock_notebook"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: stock-notebook-adminer-dev
+    ports:
+      - "8081:8080"
+    networks:
+      - stock-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: hydra
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: stock-notebook-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://stock_user:stock_password@postgres:5432/stock_notebook
+      JWT_SECRET: dev-jwt-secret-key
+      RUST_LOG: debug
+      PORT: 8080
+      FRONTEND_URL: http://localhost:3000
+      ENVIRONMENT: development
+      ENABLE_API_REQUEST_LOGGING: "true"
+      ENABLE_API_RESPONSE_LOGGING: "true"
+    networks:
+      - stock-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/migrations:/app/migrations:ro
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/src
+        - action: rebuild
+          path: ./backend/Cargo.toml
+        - action: rebuild
+          path: ./backend/migrations
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile.dev
+    container_name: stock-notebook-nginx-dev
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - stock-network
+    restart: unless-stopped
+    volumes:
+      - ./frontend/build:/var/www/html:ro
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  node_modules:
+    driver: local
+
+networks:
+  stock-network:
+    driver: bridge

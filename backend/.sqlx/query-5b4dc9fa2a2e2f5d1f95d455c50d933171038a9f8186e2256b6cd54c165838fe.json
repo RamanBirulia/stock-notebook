@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO purchases (id, symbol, quantity, price_per_share, commission, purchase_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, symbol, quantity, price_per_share, commission, purchase_date",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "quantity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "price_per_share",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "commission",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "purchase_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Int4",
+        "Numeric",
+        "Numeric",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5b4dc9fa2a2e2f5d1f95d455c50d933171038a9f8186e2256b6cd54c165838fe"
+}

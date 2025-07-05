@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE symbol = $1 ORDER BY purchase_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "quantity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "price_per_share",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "commission",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "purchase_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "607a6b1e55a25eaccddf2004bab76fdbd45376a9a4b1aa6866d58f5ac8f3815c"
+}

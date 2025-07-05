@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT purchase_date, price_per_share FROM purchases WHERE symbol = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "purchase_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 1,
+        "name": "price_per_share",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fca6071e2dc2bee1bf554b7cf88a446ffb63608c5e94218a334df5809071b652"
+}

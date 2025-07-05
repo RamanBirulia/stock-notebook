@@ -6,7 +6,7 @@ import { format } from "date-fns";
 
 import StockSymbolInput from "../components/ui/StockSymbolInput";
 import { useCreatePurchaseMutation } from "../store/api/stockApi";
-import type { SymbolSuggestion } from "../store/api/stockApi";
+import type { SymbolSuggestion } from "../store/api/models";
 
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";

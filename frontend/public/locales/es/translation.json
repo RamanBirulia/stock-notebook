@@ -39,8 +39,6 @@
   },
   "stock": {
     "details": {
-      "title": "Detalles de la Acción",
-      "backButton": "Atrás",
       "currentPrice": "Precio Actual",
       "metrics": {
         "totalShares": "Total de Acciones",
@@ -50,11 +48,7 @@
       },
       "chart": {
         "title": "Gráfico de Precios",
-        "periods": {
-          "1M": "1M",
-          "1Y": "1A",
-          "5Y": "5A"
-        }
+        "periods": {}
       },
       "purchaseHistory": {
         "title": "Historial de Compras",
@@ -73,10 +67,7 @@
         "loadingError": "Error al cargar los datos de la acción",
         "chartError": "Error al cargar los datos del gráfico"
       },
-      "loading": {
-        "stock": "Cargando datos de la acción...",
-        "chart": "Cargando gráfico..."
-      }
+      "loading": {}
     }
   },
   "chart": {
@@ -128,9 +119,7 @@
   },
   "stockSymbolInput": {
     "placeholder": "Buscar acciones (ej. AAPL, GOOGL, MSFT)",
-    "searchError": "Error al buscar símbolos. Inténtalo de nuevo.",
-    "noResults": "No se encontraron símbolos",
-    "loading": "Buscando..."
+    "searchError": "Error al buscar símbolos. Inténtalo de nuevo."
   },
   "common": {
     "cancel": "Cancelar",
@@ -290,7 +279,6 @@
           }
         },
         "dataSharing": {
-          "title": "Política de Compartir Datos",
           "noSharing": "NO compartimos tus datos. Punto.",
           "text": "La información de tu portafolio nunca se vende, comparte o divulga a terceros bajo ninguna circunstancia. Sin excepciones."
         },
@@ -428,9 +416,7 @@
     },
     "common": {
       "back": "Atrás",
-      "contactUs": "Contáctanos",
-      "support": "Soporte",
-      "email": "Correo electrónico"
+      "contactUs": "Contáctanos"
     }
   },
   "errors": {},
@@ -492,6 +478,11 @@
         "yourRights": "Tus Derechos y Control",
         "questions": "¿Preguntas sobre Privacidad?",
         "updates": "Actualizaciones de Política"
+      },
+      "content": {
+        "dataSharing": {
+          "title": "Política de Compartir Datos"
+        }
       }
     },
     "termsOfService": {
@@ -517,5 +508,26 @@
       "support": "Soporte",
       "email": "Correo electrónico"
     }
+  },
+  "__DEPRECATED__stock": {
+    "details": {
+      "title": "Detalles de la Acción",
+      "backButton": "Atrás",
+      "chart": {
+        "periods": {
+          "1M": "1M",
+          "1Y": "1A",
+          "5Y": "5A"
+        }
+      },
+      "loading": {
+        "stock": "Cargando datos de la acción...",
+        "chart": "Cargando gráfico..."
+      }
+    }
+  },
+  "__DEPRECATED__stockSymbolInput": {
+    "noResults": "No se encontraron símbolos",
+    "loading": "Buscando..."
   }
 }

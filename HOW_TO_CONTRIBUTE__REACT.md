@@ -76,6 +76,7 @@ MyWidget/
 * `camelCase` for variables & functions & folders.
 * `UPPER_SNAKE_CASE` for constants and enum‑style maps.
 * All pages should be named with Page postfix eg. DashboardPage, LoginPage, SignupPage, etc.
+* DO NOT CREATE INDEX FILES AND DO NOT IMPORT FROM THEM
 
 ## Performance
 

@@ -6,14 +6,18 @@ import {
   useLocation,
 } from "react-router-dom";
 import { Provider } from "react-redux";
+import { HelmetProvider } from "react-helmet-async";
 import { store } from "./store";
 import { useAppDispatch, useAppSelector } from "./store";
 import { initializeTheme, updateSystemTheme } from "./store/slices/themeSlice";
 import { setMobile } from "./store/slices/uiSlice";
 import { selectIsAuthenticated } from "./store/slices/authSlice";
 import Layout from "./components/layout/Layout";
+import ErrorBoundary from "./components/errors/ErrorBoundary";
+import { useI18nReady } from "./hooks/i18n/useI18nReady";
+
 import {
-  Dashboard,
+  DashboardPage,
   AddPurchase,
   StockDetails,
   Login,
@@ -21,8 +25,11 @@ import {
 } from "./pages";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
+import NotFound from "./pages/errors/NotFound";
 import "./i18n";
 import "./index.css";
+import { SkeletonDashboardHeader } from "./components/ui/loading/SkeletonHeader";
+import { SkeletonDashboard } from "./components/ui/loading/Skeleton";
 
 // Enhanced theme effect hook with proper initialization
 const useThemeEffect = () => {
@@ -90,6 +97,19 @@ const useScrollToTop = () => {
 const RouterContent: React.FC = () => {
   useScrollToTop();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const { isReady, isLoading } = useI18nReady();
+
+  // Show loading state while i18n is initializing
+  if (isLoading || !isReady) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <SkeletonDashboardHeader />
+        <main className="min-h-screen max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex-1">
+          <SkeletonDashboard />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -103,13 +123,14 @@ const RouterContent: React.FC = () => {
           element={
             <Layout>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/add-purchase" element={<AddPurchase />} />
                 <Route path="/stock/:symbol" element={<StockDetails />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/404" element={<NotFound />} />
                 {/* Redirect any other route to dashboard when authenticated */}
-                <Route path="*" element={<Dashboard />} />
+                <Route path="*" element={<DashboardPage />} />
               </Routes>
             </Layout>
           }
@@ -117,6 +138,7 @@ const RouterContent: React.FC = () => {
       ) : (
         <>
           <Route path="/login" element={<Login />} />
+          <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<LandingPage />} />
         </>
       )}
@@ -141,9 +163,13 @@ const AppContent: React.FC = () => {
 // Main App component
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <Provider store={store}>
+          <AppContent />
+        </Provider>
+      </HelmetProvider>
+    </ErrorBoundary>
   );
 };
 

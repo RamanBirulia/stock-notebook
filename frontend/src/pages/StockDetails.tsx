@@ -10,11 +10,8 @@ import {
   Share,
 } from "lucide-react";
 
-import {
-  useGetStockQuery,
-  useGetStockChartQuery,
-  ChartPeriod,
-} from "../store/api/stockApi";
+import { useGetStockQuery, useGetStockChartQuery } from "../store/api/stockApi";
+import { ChartPeriod } from "../store/api/models";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { StockChart } from "../components/charts/StockChart";

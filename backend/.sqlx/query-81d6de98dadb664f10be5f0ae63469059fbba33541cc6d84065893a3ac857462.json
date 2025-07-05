@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT symbol, SUM(quantity) as total_quantity, AVG(price_per_share) as avg_price, SUM(quantity * price_per_share + commission) as total_spent FROM purchases GROUP BY symbol",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "total_quantity",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "avg_price",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "total_spent",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "81d6de98dadb664f10be5f0ae63469059fbba33541cc6d84065893a3ac857462"
+}
