@@ -28,8 +28,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const isProfit = dashboardData.profit_loss >= 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 @md:grid-cols-4 gap-6">
       <StatCard
+        className="col-span-1"
         icon={DollarSign}
         iconColor="text-primary-600"
         title={t("dashboard.stats.totalSpent")}
@@ -37,6 +38,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       />
 
       <StatCard
+        className="col-span-1"
         icon={PieChart}
         iconColor="text-success-600"
         title={t("dashboard.stats.currentValue")}
@@ -44,6 +46,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       />
 
       <StatCard
+        className="col-span-2 @md:col-span-1"
         icon={isProfit ? TrendingUp : TrendingDown}
         iconColor={isProfit ? "text-success-600" : "text-danger-600"}
         title={t("dashboard.stats.profitLoss")}
@@ -52,6 +55,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       />
 
       <StatCard
+        className="hidden @md:block @md:col-span-1"
         icon={BarChart3}
         iconColor={isProfit ? "text-success-600" : "text-danger-600"}
         title={t("dashboard.stats.percentage")}

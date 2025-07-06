@@ -9,6 +9,7 @@ interface StatCardProps {
   title: string;
   value: string;
   valueColor?: string;
+  className?: string;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -17,9 +18,10 @@ export const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
   valueColor = "text-gray-900 dark:text-white",
+  className = ''
 }) => {
   return (
-    <Card>
+    <Card className={className}>
       <div className="flex items-center">
         <div className="flex-shrink-0">
           <Icon className={`h-8 w-8 ${iconColor}`} />

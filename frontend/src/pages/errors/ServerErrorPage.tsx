@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { SEOHead } from "../../components/SEO";
 
-const ServerError: React.FC = () => {
+const ServerErrorPage: React.FC = () => {
   const { t } = useTranslation();
 
   const seoConfig = {
@@ -246,4 +246,4 @@ Additional Information:
   );
 };
 
-export default ServerError;
+export default ServerErrorPage;

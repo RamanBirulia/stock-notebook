@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO stock_data (symbol, price, volume, data_date)\n             VALUES ($1, $2, $3, $4)\n             ON CONFLICT (symbol, data_date)\n             DO UPDATE SET\n                price = EXCLUDED.price,\n                volume = EXCLUDED.volume,\n                updated_at = CURRENT_TIMESTAMP\n             RETURNING id, symbol, price, volume, data_date, created_at, updated_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "price",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "volume",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "data_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Numeric",
+        "Int8",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "9ed2cd0e50bd64d556d7ee0ca4fb1e91db918d502110d094650a74ae631b7574"
+}

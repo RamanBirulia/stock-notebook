@@ -1,5 +1,5 @@
 import React from 'react';
-import { useI18nReady } from '../../hooks/i18n/useI18nReady';
+import { useI18nReady } from '../../hooks/useI18nReady';
 
 import { SEOHead, generateSEOConfig } from '../SEO';
 import SkeletonHeader from "../ui/loading/SkeletonHeader";

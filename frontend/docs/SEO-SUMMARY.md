@@ -80,7 +80,7 @@ This document summarizes the comprehensive SEO optimization implementation for t
 2. **Page Components**
    - `frontend/src/components/landing/LandingPage.tsx` - SEO implementation
    - `frontend/src/pages/Dashboard.tsx` - SEO implementation
-   - `frontend/src/pages/Login.tsx` - SEO implementation
+   - `frontend/src/pages/LoginPage.tsx` - SEO implementation
 
 ## 🎨 Generated Assets
 

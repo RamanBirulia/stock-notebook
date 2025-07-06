@@ -29,7 +29,7 @@ interface FormErrors {
   submit?: string;
 }
 
-const AddPurchase: React.FC = () => {
+const AddPurchasePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [createPurchase, { isLoading }] = useCreatePurchaseMutation();
@@ -315,4 +315,4 @@ const AddPurchase: React.FC = () => {
   );
 };
 
-export default AddPurchase;
+export default AddPurchasePage;

@@ -162,7 +162,7 @@ const Dashboard = () => (
 #### Login Page
 
 ```typescript
-// frontend/src/pages/Login.tsx
+// frontend/src/pages/LoginPage.tsx
 import { SEOHead, generateSEOConfig } from '../components/SEO';
 
 const LoginPage = () => (

@@ -1,7 +1,7 @@
-import ThemeToggle from "../ui/ThemeToggle";
-import LanguageSelector from "../layout/LanguageSelector";
+import ThemeToggle from "../../ui/ThemeToggle";
+import LanguageSelector from "../../layout/LanguageSelector";
 import { TrendingUp, LogIn } from "lucide-react";
-import { Button } from "../ui/Button";
+import { Button } from "../../ui/Button";
 
 interface LandingHeaderProps {
   handleSignInClick: () => void;

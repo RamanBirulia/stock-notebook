@@ -8,131 +8,27 @@ import {
   Star,
   LogIn,
 } from "lucide-react";
-import { Card } from "../ui/Card";
-import { Button } from "../ui/Button";
-import Login from "../auth/Login";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import Login from "../components/auth/Login";
 
-import { Footer } from "../layout/Footer";
-import { Modal } from "../ui/Modal";
+import { Footer } from "../components/layout/Footer";
+import { Modal } from "../components/ui/Modal";
 import {
   SEOHead,
   generateSEOConfig,
   generateApplicationStructuredData,
-} from "../SEO";
+} from "../components/SEO";
 
-import { useI18nReady } from "../../hooks/i18n/useI18nReady";
-import { SkeletonLandingHeader } from "../ui/loading/SkeletonHeader";
-import { fakeDashboardData } from "./landingData";
-import { LandingHeader } from "./LandingHeader";
-import { SpeechBubble } from "./SpeechBubble";
+import { useI18nReady } from "../hooks/useI18nReady";
+import { SkeletonLandingHeader } from "../components/ui/loading/SkeletonHeader";
+import { fakeDashboardData } from "../components/landing/data/landingData";
+import { LandingHeader } from "../components/landing/components/LandingHeader";
+import { SpeechBubble } from "../components/landing/components/SpeechBubble";
+import {LandingDashboard} from "../components/landing/LandingDashboard";
 
 // Hand-drawn style speech bubble component
 
-// Demo dashboard component
-const DemoDashboard: React.FC = () => {
-  const isProfit = fakeDashboardData.profit_loss >= 0;
-
-  return (
-    <div className="space-y-4">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="p-3 transform hover:scale-105 transition-transform">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <DollarSign className="h-6 w-6 text-primary-600" />
-            </div>
-            <div className="ml-2">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Total Spent
-              </p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                ${fakeDashboardData.total_spent.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-3 transform hover:scale-105 transition-transform">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <PieChart className="h-6 w-6 text-success-600" />
-            </div>
-            <div className="ml-2">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Current Value
-              </p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                ${fakeDashboardData.current_value.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-3 transform hover:scale-105 transition-transform col-span-2">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              {isProfit ? (
-                <TrendingUp className="h-6 w-6 text-success-600" />
-              ) : (
-                <TrendingDown className="h-6 w-6 text-danger-600" />
-              )}
-            </div>
-            <div className="ml-2">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Profit/Loss
-              </p>
-              <p
-                className={`text-lg font-bold ${isProfit ? "text-success-600" : "text-danger-600"}`}
-              >
-                +${fakeDashboardData.profit_loss.toLocaleString()} (+
-                {fakeDashboardData.profit_loss_percentage}%)
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Stocks Mini Table */}
-      <Card className="p-3">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-          Your Portfolio
-        </h3>
-        <div className="space-y-2">
-          {fakeDashboardData.stocks.slice(0, 3).map((stock) => {
-            const stockProfitLoss = stock.total_value - stock.total_spent;
-            const isStockProfit = stockProfitLoss >= 0;
-
-            return (
-              <div
-                key={stock.symbol}
-                className="flex justify-between items-center py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-              >
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-white text-sm">
-                    {stock.symbol}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                    {stock.quantity} shares
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    ${stock.total_value.toLocaleString()}
-                  </div>
-                  <div
-                    className={`text-xs ${isStockProfit ? "text-success-600" : "text-danger-600"}`}
-                  >
-                    {isStockProfit ? "+" : ""}${stockProfitLoss.toFixed(0)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-    </div>
-  );
-};
 
 // Demo form component
 const DemoForm: React.FC = () => {
@@ -279,7 +175,8 @@ const LandingPage: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <DemoDashboard />
+
+                    <LandingDashboard />
                   </div>
                 </div>
               </div>

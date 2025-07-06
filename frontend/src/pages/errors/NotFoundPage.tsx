@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { SEOHead } from "../../components/SEO";
 
-const NotFound: React.FC = () => {
+const NotFoundPage: React.FC = () => {
   const { t } = useTranslation();
 
   const seoConfig = {
@@ -160,4 +160,4 @@ const NotFound: React.FC = () => {
   );
 };
 
-export default NotFound;
+export default NotFoundPage;

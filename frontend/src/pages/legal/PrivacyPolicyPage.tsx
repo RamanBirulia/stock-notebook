@@ -56,7 +56,7 @@ const HandDrawnCircle: React.FC<{
   );
 };
 
-const PrivacyPolicy: React.FC = () => {
+const PrivacyPolicyPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -419,4 +419,4 @@ const PrivacyPolicy: React.FC = () => {
   );
 };
 
-export default PrivacyPolicy;
+export default PrivacyPolicyPage;

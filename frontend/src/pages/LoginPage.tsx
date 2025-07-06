@@ -5,7 +5,7 @@ import { selectIsAuthenticated } from "../store/slices/authSlice";
 import Login from "../components/auth/Login";
 import { SEOHead, generateSEOConfig } from "../components/SEO";
 
-const LoginPage: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
 

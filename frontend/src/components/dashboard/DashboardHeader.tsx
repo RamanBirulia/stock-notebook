@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 
 import { Button } from "../ui/Button";
 
-export const DashboardHeader: React.FC = () => {
+export const DashboardHeader: React.FC<{hideControls?: boolean}> = ({hideControls}) => {
   const { t } = useTranslation();
 
   return (
@@ -18,16 +18,18 @@ export const DashboardHeader: React.FC = () => {
           {t("dashboard.subtitle")}
         </p>
       </div>
-      <div className="mt-4 sm:mt-0">
-        <Button
-          as={Link}
-          to="/add-purchase"
-          variant="primary"
-          leftIcon={<Plus size={16} />}
-        >
-          {t("dashboard.addPurchase")}
-        </Button>
-      </div>
+      {!hideControls && (
+        <div className="mt-4 sm:mt-0">
+          <Button
+            as={Link}
+            to="/add-purchase"
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+          >
+            {t("dashboard.addPurchase")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

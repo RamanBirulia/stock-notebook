@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM stock_data WHERE data_date < $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Date"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fb680af15f036d21607f9a84f69e2aec4ab623d622d683a1d2b68d93def48c5f"
+}

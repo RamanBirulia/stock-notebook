@@ -16,7 +16,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { StockChart } from "../components/charts/StockChart";
 
-const StockDetails: React.FC = () => {
+export const StockDetailsPage: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -352,4 +352,4 @@ const StockDetails: React.FC = () => {
   );
 };
 
-export default StockDetails;
+export default StockDetailsPage;

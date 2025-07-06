@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Footer } from "./Footer";
-import { useI18nReady } from "../../hooks/i18n/useI18nReady";
+import { useI18nReady } from "../../hooks/useI18nReady";
 import {SkeletonDashboard} from "../ui/loading/Skeleton";
 import {SkeletonDashboardHeader} from "../ui/loading/SkeletonHeader";
 

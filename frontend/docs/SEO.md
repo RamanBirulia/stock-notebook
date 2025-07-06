@@ -226,9 +226,9 @@
 - ✅ `frontend/src/App.tsx` - HelmetProvider and ErrorBoundary integration
 - ✅ `frontend/src/components/landing/LandingPage.tsx` - SEO implementation
 - ✅ `frontend/src/pages/Dashboard.tsx` - SEO and skeleton loading implementation
-- ✅ `frontend/src/pages/Login.tsx` - SEO implementation
-- ✅ `frontend/src/pages/errors/NotFound.tsx` - Custom 404 page with SEO
-- ✅ `frontend/src/pages/errors/ServerError.tsx` - Custom 500 page with SEO
+- ✅ `frontend/src/pages/LoginPage.tsx` - SEO implementation
+- ✅ `frontend/src/pages/errors/NotFoundPage.tsx` - Custom 404 page with SEO
+- ✅ `frontend/src/pages/errors/ServerErrorPage.tsx` - Custom 500 page with SEO
 - ✅ `frontend/src/components/errors/ErrorBoundary.tsx` - React error boundary
 - ✅ `frontend/src/components/ui/loading/LoadingSpinner.tsx` - Loading spinner component
 - ✅ `frontend/src/components/ui/loading/Skeleton.tsx` - Skeleton loading components

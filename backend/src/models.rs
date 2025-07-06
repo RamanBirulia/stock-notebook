@@ -289,3 +289,22 @@ pub struct SymbolSuggestion {
     pub exchange: String,
     pub asset_type: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockData {
+    pub id: String,
+    pub symbol: String,
+    pub price: Decimal,
+    pub volume: Option<i64>,
+    pub data_date: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateStockDataRequest {
+    pub symbol: String,
+    pub price: Decimal,
+    pub volume: Option<i64>,
+    pub data_date: String,
+}

@@ -1,14 +1,11 @@
-use reqwest::Client;
+use crate::models::{CreateStockDataRequest, PricePoint, StockSymbol, SymbolSuggestion};
+use crate::stock_data_service::StockDataService;
+use crate::yahoo_api::YahooFinanceClient;
+use chrono::{self, Utc};
 use rust_decimal::Decimal;
-
-use chrono;
+use sqlx::PgPool;
 use std::collections::HashMap;
-
 use std::sync::{Arc, Mutex};
-
-use crate::models::{
-    PricePoint, StockSymbol, SymbolSuggestion, YahooFinanceResponse, YahooV1SearchResponse,
-};
 
 #[derive(Clone, Debug)]
 struct CacheItem<T> {
@@ -34,19 +31,20 @@ type PriceCache = Arc<Mutex<HashMap<String, CacheItem<Decimal>>>>;
 type ChartCache = Arc<Mutex<HashMap<String, CacheItem<Vec<PricePoint>>>>>;
 type SymbolCache = Arc<Mutex<HashMap<String, CacheItem<Vec<StockSymbol>>>>>;
 
+#[derive(Clone)]
 pub struct StockApiClient {
-    client: Client,
-    base_url: String,
+    yahoo_client: YahooFinanceClient,
+    stock_data_service: Arc<StockDataService>,
     price_cache: PriceCache,
     chart_cache: ChartCache,
     symbol_cache: SymbolCache,
 }
 
 impl StockApiClient {
-    pub fn new() -> Self {
+    pub fn new(db: PgPool) -> Self {
         Self {
-            client: Client::new(),
-            base_url: "https://query1.finance.yahoo.com".to_string(),
+            yahoo_client: YahooFinanceClient::new(),
+            stock_data_service: Arc::new(StockDataService::new(db)),
             price_cache: Arc::new(Mutex::new(HashMap::new())),
             chart_cache: Arc::new(Mutex::new(HashMap::new())),
             symbol_cache: Arc::new(Mutex::new(HashMap::new())),
@@ -54,71 +52,49 @@ impl StockApiClient {
     }
 
     pub async fn get_current_price(&self, symbol: &str) -> Result<Decimal, String> {
-        let cache_key = format!("price_{}", symbol.to_uppercase());
+        let today = Utc::now().date_naive().to_string();
+        let symbol_upper = symbol.to_uppercase();
 
-        if let Ok(cache) = self.price_cache.lock() {
-            if let Some(cached_item) = cache.get(&cache_key) {
-                if !cached_item.is_expired() {
-                    return Ok(cached_item.data);
+        // Check if we have today's data in database
+        match self.stock_data_service.has_today_data(&symbol_upper).await {
+            Ok(has_data) => {
+                if has_data {
+                    // Get today's data from database
+                    if let Ok(Some(stock_data)) = self
+                        .stock_data_service
+                        .get_stock_data_by_date(&symbol_upper, &today)
+                        .await
+                    {
+                        return Ok(stock_data.price);
+                    }
                 }
+            }
+            Err(_) => {
+                // Continue to fetch from API if database check fails
             }
         }
 
-        let price = self.fetch_current_price_from_api(symbol).await?;
+        // Fetch from Yahoo Finance API
+        let price = self.yahoo_client.fetch_current_price(symbol).await?;
 
-        if let Ok(mut cache) = self.price_cache.lock() {
-            cache.insert(cache_key, CacheItem::new(price));
+        // Store in database
+        let stock_data_request = CreateStockDataRequest {
+            symbol: symbol_upper.clone(),
+            price,
+            volume: None,
+            data_date: today,
+        };
+
+        if let Err(e) = self
+            .stock_data_service
+            .upsert_stock_data(&stock_data_request)
+            .await
+        {
+            // Log error but don't fail the request
+            eprintln!("Failed to store stock data in database: {}", e);
         }
 
         Ok(price)
-    }
-
-    async fn fetch_current_price_from_api(&self, symbol: &str) -> Result<Decimal, String> {
-        let url = format!(
-            "{}/v8/finance/chart/{}?interval=1m&range=1d",
-            self.base_url,
-            symbol.to_uppercase()
-        );
-
-        let response = match self.client.get(&url).send().await {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!("Request failed for symbol {}: {}", symbol, e));
-            }
-        };
-
-        let response_status = response.status();
-
-        let response_text = match response.text().await {
-            Ok(text) => text,
-            Err(e) => {
-                return Err(format!(
-                    "Failed to read response text for symbol {}: {}",
-                    symbol, e
-                ));
-            }
-        };
-
-        if !response_status.is_success() {
-            return Err(format!(
-                "Yahoo Finance API returned error for symbol {}: HTTP {} - {}",
-                symbol, response_status, response_text
-            ));
-        }
-
-        let yahoo_response: YahooFinanceResponse = match serde_json::from_str(&response_text) {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!("Failed to parse JSON for symbol {}: {}", symbol, e));
-            }
-        };
-
-        if let Some(result) = yahoo_response.chart.result.and_then(|mut r| r.pop()) {
-            let price = result.meta.regular_market_price;
-            Ok(Decimal::from_f64_retain(price).unwrap_or(Decimal::ZERO))
-        } else {
-            Err(format!("No current price data found for symbol {}", symbol))
-        }
     }
 
     pub async fn get_chart_data(
@@ -126,9 +102,75 @@ impl StockApiClient {
         symbol: &str,
         period: &str,
     ) -> Result<Vec<PricePoint>, String> {
-        let cache_key = format!("chart_{}_{}", symbol.to_uppercase(), period);
+        let symbol_upper = symbol.to_uppercase();
+        let (start_date, end_date) = self.get_date_range_for_period(period);
 
-        if let Ok(cache) = self.chart_cache.lock() {
+        // Check if we have sufficient data in database
+        match self
+            .stock_data_service
+            .get_stock_data_range(&symbol_upper, &start_date, &end_date)
+            .await
+        {
+            Ok(db_data) => {
+                // Check if we have recent enough data
+                let today = Utc::now().date_naive().to_string();
+                let has_recent_data = db_data.iter().any(|d| d.data_date >= today);
+
+                if !db_data.is_empty() && has_recent_data {
+                    // Convert database data to PricePoint format
+                    let mut price_points: Vec<PricePoint> = db_data
+                        .into_iter()
+                        .map(|data| PricePoint {
+                            date: data.data_date,
+                            price: data.price,
+                            volume: data.volume,
+                        })
+                        .collect();
+
+                    // Apply business logic: filter data by period
+                    price_points = self.filter_data_by_period(price_points, period);
+                    return Ok(price_points);
+                }
+            }
+            Err(_) => {
+                // Continue to fetch from API if database check fails
+            }
+        }
+
+        // Fetch from Yahoo Finance API
+        let mut chart_data = self.yahoo_client.fetch_chart_data(symbol, period).await?;
+
+        // Store fetched data in database
+        let stock_data_requests: Vec<CreateStockDataRequest> = chart_data
+            .iter()
+            .map(|point| CreateStockDataRequest {
+                symbol: symbol_upper.clone(),
+                price: point.price,
+                volume: point.volume,
+                data_date: point.date.clone(),
+            })
+            .collect();
+
+        if let Err(e) = self
+            .stock_data_service
+            .bulk_insert_stock_data(stock_data_requests)
+            .await
+        {
+            // Log error but don't fail the request
+            eprintln!("Failed to store chart data in database: {}", e);
+        }
+
+        // Apply business logic: filter data by period
+        chart_data = self.filter_data_by_period(chart_data, period);
+
+        Ok(chart_data)
+    }
+
+    pub async fn get_all_symbols(&self) -> Result<Vec<StockSymbol>, String> {
+        let cache_key = "all_symbols".to_string();
+
+        // Check cache first
+        if let Ok(cache) = self.symbol_cache.lock() {
             if let Some(cached_item) = cache.get(&cache_key) {
                 if !cached_item.is_expired() {
                     return Ok(cached_item.data.clone());
@@ -136,147 +178,80 @@ impl StockApiClient {
             }
         }
 
-        let chart_data = self.fetch_chart_data_from_api(symbol, period).await?;
+        // Fetch from Yahoo Finance API
+        let symbols = self.yahoo_client.fetch_symbols().await?;
 
-        if let Ok(mut cache) = self.chart_cache.lock() {
-            cache.insert(cache_key, CacheItem::new(chart_data.clone()));
+        // Cache the result
+        if let Ok(mut cache) = self.symbol_cache.lock() {
+            cache.insert(cache_key, CacheItem::new(symbols.clone()));
         }
 
-        Ok(chart_data)
+        Ok(symbols)
     }
 
-    async fn fetch_chart_data_from_api(
+    pub async fn search_symbols(
         &self,
-        symbol: &str,
-        period: &str,
-    ) -> Result<Vec<PricePoint>, String> {
-        let (range, interval) = match period {
-            "1D" => ("1d", "5m"),
-            "1W" => ("5d", "15m"),
-            "1M" => ("1mo", "1d"),
-            "3M" => ("3mo", "1d"),
-            "6M" => ("6mo", "1d"),
-            "1Y" => ("1y", "1d"),
-            "2Y" => ("2y", "1wk"),
-            "5Y" => ("5y", "1wk"),
-            "10Y" => ("10y", "1mo"),
-            "MAX" => ("max", "1mo"),
-            _ => ("1mo", "1d"),
-        };
+        query: &str,
+        limit: usize,
+    ) -> Result<Vec<SymbolSuggestion>, String> {
+        // First, search in our predefined symbols
+        let all_symbols = self.get_all_symbols().await?;
+        let query_lower = query.to_lowercase();
 
-        let url = format!(
-            "{}/v8/finance/chart/{}?interval={}&range={}",
-            self.base_url,
-            symbol.to_uppercase(),
-            interval,
-            range
-        );
+        let mut matches: Vec<SymbolSuggestion> = all_symbols
+            .iter()
+            .filter(|symbol| {
+                let symbol_lower = symbol.symbol.to_lowercase();
+                let name_lower = symbol.name.to_lowercase();
 
-        let response = match self.client.get(&url).send().await {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!(
-                    "Request failed for symbol {} with period {}: {}",
-                    symbol, period, e
-                ));
-            }
-        };
+                symbol_lower.starts_with(&query_lower) || name_lower.contains(&query_lower)
+            })
+            .take(limit)
+            .map(|symbol| SymbolSuggestion {
+                symbol: symbol.symbol.clone(),
+                name: symbol.name.clone(),
+                exchange: symbol.exchange.clone(),
+                asset_type: symbol.asset_type.clone(),
+            })
+            .collect();
 
-        let response_status = response.status();
-
-        let response_text = match response.text().await {
-            Ok(text) => text,
-            Err(e) => {
-                return Err(format!(
-                    "Failed to read response text for symbol {} with period {}: {}",
-                    symbol, period, e
-                ));
-            }
-        };
-
-        if !response_status.is_success() {
-            return Err(format!(
-                "Yahoo Finance API returned error for symbol {} with period {}: HTTP {} - {}",
-                symbol, period, response_status, response_text
-            ));
-        }
-
-        let yahoo_response: YahooFinanceResponse = match serde_json::from_str(&response_text) {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!(
-                    "Failed to parse JSON for symbol {} with period {}: {}",
-                    symbol, period, e
-                ));
-            }
-        };
-
-        if let Some(result) = yahoo_response.chart.result.and_then(|mut r| r.pop()) {
-            let timestamps = result.timestamp;
-            let quote_data = result.indicators.quote.into_iter().next().unwrap();
-            let closes = quote_data.close;
-            let volumes = quote_data.volume;
-
-            let mut price_points = Vec::new();
-
-            for (i, &timestamp) in timestamps.iter().enumerate() {
-                if let Some(close_price) = closes.get(i).and_then(|&p| p) {
-                    let date = chrono::DateTime::from_timestamp(timestamp, 0)
-                        .unwrap_or_else(chrono::Utc::now)
-                        .format("%Y-%m-%d")
-                        .to_string();
-
-                    let volume = volumes.get(i).and_then(|&v| v);
-
-                    price_points.push(PricePoint {
-                        date,
-                        price: Decimal::from_f64_retain(close_price).unwrap_or(Decimal::ZERO),
-                        volume,
+        // If we don't have enough matches, search Yahoo Finance API
+        if matches.len() < limit {
+            match self
+                .yahoo_client
+                .search_symbols(query, limit - matches.len())
+                .await
+            {
+                Ok(mut yahoo_matches) => {
+                    // Remove duplicates
+                    yahoo_matches.retain(|yahoo_match| {
+                        !matches
+                            .iter()
+                            .any(|existing| existing.symbol == yahoo_match.symbol)
                     });
+                    matches.extend(yahoo_matches);
+                }
+                Err(_) => {
+                    // Continue with predefined matches only if Yahoo search fails
                 }
             }
-
-            let filtered_data = self.filter_data_by_period(price_points, period);
-            Ok(filtered_data)
-        } else {
-            Err(format!(
-                "No chart data found for symbol {} with period {}",
-                symbol, period
-            ))
-        }
-    }
-
-    fn filter_data_by_period(&self, mut data: Vec<PricePoint>, period: &str) -> Vec<PricePoint> {
-        let max_points = match period {
-            "1D" => 1,
-            "1W" => 7,
-            "1M" => 30,
-            "3M" => 30 * 3,
-            "6M" => 30 * 6,
-            "1Y" => 365,
-            "2Y" => 365 * 2,
-            "5Y" => 365 * 5,
-            "10Y" => 365 * 10,
-            "MAX" => 365 * 10,
-            _ => 100,
-        };
-
-        if data.len() > max_points {
-            let step = data.len() / max_points;
-            data = data.into_iter().step_by(step.max(1)).collect();
         }
 
-        data
-    }
-}
+        // Sort results with exact matches first
+        matches.sort_by(|a, b| {
+            let a_exact = a.symbol.to_lowercase() == query_lower;
+            let b_exact = b.symbol.to_lowercase() == query_lower;
 
-impl Default for StockApiClient {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+            match (a_exact, b_exact) {
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                _ => a.symbol.cmp(&b.symbol),
+            }
+        });
 
-impl StockApiClient {
+        Ok(matches)
+    }
+
     pub fn clear_cache(&self) {
         if let Ok(mut cache) = self.price_cache.lock() {
             cache.clear();
@@ -320,236 +295,140 @@ impl StockApiClient {
         (price_count, chart_count, symbol_count)
     }
 
-    pub async fn get_all_symbols(&self) -> Result<Vec<StockSymbol>, String> {
-        let cache_key = "all_symbols".to_string();
+    fn filter_data_by_period(&self, mut data: Vec<PricePoint>, period: &str) -> Vec<PricePoint> {
+        let max_points = match period {
+            "1D" => 1,
+            "1W" => 7,
+            "1M" => 30,
+            "3M" => 30 * 3,
+            "6M" => 30 * 6,
+            "1Y" => 365,
+            "2Y" => 365 * 2,
+            "5Y" => 365 * 5,
+            "10Y" => 365 * 10,
+            "MAX" => 365 * 10,
+            _ => 100,
+        };
 
-        if let Ok(cache) = self.symbol_cache.lock() {
-            if let Some(cached_item) = cache.get(&cache_key) {
-                if !cached_item.is_expired() {
-                    return Ok(cached_item.data.clone());
-                }
-            }
+        if data.len() > max_points {
+            let step = data.len() / max_points;
+            data = data.into_iter().step_by(step.max(1)).collect();
         }
 
-        let symbols = self.fetch_symbols_from_api().await?;
+        data
+    }
+    /// Get date range for a given period
+    fn get_date_range_for_period(&self, period: &str) -> (String, String) {
+        let end_date = Utc::now().date_naive();
+        let start_date = match period {
+            "1D" => end_date - chrono::Duration::days(1),
+            "1W" => end_date - chrono::Duration::weeks(1),
+            "1M" => end_date - chrono::Duration::days(30),
+            "3M" => end_date - chrono::Duration::days(90),
+            "6M" => end_date - chrono::Duration::days(180),
+            "1Y" => end_date - chrono::Duration::days(365),
+            "2Y" => end_date - chrono::Duration::days(730),
+            "5Y" => end_date - chrono::Duration::days(1825),
+            "10Y" => end_date - chrono::Duration::days(3650),
+            "MAX" => end_date - chrono::Duration::days(7300), // ~20 years
+            _ => end_date - chrono::Duration::days(30),
+        };
 
-        if let Ok(mut cache) = self.symbol_cache.lock() {
-            cache.insert(cache_key, CacheItem::new(symbols.clone()));
-        }
-
-        Ok(symbols)
+        (start_date.to_string(), end_date.to_string())
     }
 
-    async fn fetch_symbols_from_api(&self) -> Result<Vec<StockSymbol>, String> {
-        let symbols = vec![
-            StockSymbol {
-                symbol: "AAPL".to_string(),
-                name: "Apple Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1980-12-12".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "GOOGL".to_string(),
-                name: "Alphabet Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "2004-08-19".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "MSFT".to_string(),
-                name: "Microsoft Corporation".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1986-03-13".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "AMZN".to_string(),
-                name: "Amazon.com Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1997-05-15".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "TSLA".to_string(),
-                name: "Tesla Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "2010-06-29".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "META".to_string(),
-                name: "Meta Platforms Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "2012-05-18".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "NFLX".to_string(),
-                name: "Netflix Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "2002-05-23".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "NVDA".to_string(),
-                name: "NVIDIA Corporation".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1999-01-22".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "AMD".to_string(),
-                name: "Advanced Micro Devices Inc.".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1972-09-27".to_string(),
-                status: "Active".to_string(),
-            },
-            StockSymbol {
-                symbol: "INTC".to_string(),
-                name: "Intel Corporation".to_string(),
-                exchange: "NASDAQ".to_string(),
-                asset_type: "Equity".to_string(),
-                ipo_date: "1971-10-13".to_string(),
-                status: "Active".to_string(),
-            },
-        ];
-
-        Ok(symbols)
-    }
-
-    pub async fn search_symbols(
+    /// Get portfolio value using database data
+    pub async fn get_portfolio_current_value(
         &self,
-        query: &str,
-        limit: usize,
-    ) -> Result<Vec<SymbolSuggestion>, String> {
-        let all_symbols = self.get_all_symbols().await?;
-        let query_lower = query.to_lowercase();
+        symbols: &[String],
+    ) -> Result<HashMap<String, Decimal>, String> {
+        let mut portfolio_values = HashMap::new();
 
-        let mut matches: Vec<SymbolSuggestion> = all_symbols
-            .iter()
-            .filter(|symbol| {
-                let symbol_lower = symbol.symbol.to_lowercase();
-                let name_lower = symbol.name.to_lowercase();
+        for symbol in symbols {
+            let price = self.get_current_price(symbol).await?;
+            portfolio_values.insert(symbol.clone(), price);
+        }
 
-                symbol_lower.starts_with(&query_lower) || name_lower.contains(&query_lower)
-            })
-            .take(limit)
-            .map(|symbol| SymbolSuggestion {
-                symbol: symbol.symbol.clone(),
-                name: symbol.name.clone(),
-                exchange: symbol.exchange.clone(),
-                asset_type: symbol.asset_type.clone(),
-            })
-            .collect();
+        Ok(portfolio_values)
+    }
 
-        if matches.len() < limit {
-            match self
-                .search_yahoo_symbols(query, limit - matches.len())
-                .await
-            {
-                Ok(mut yahoo_matches) => {
-                    yahoo_matches.retain(|yahoo_match| {
-                        !matches
-                            .iter()
-                            .any(|existing| existing.symbol == yahoo_match.symbol)
-                    });
-                    matches.extend(yahoo_matches);
+    /// Update stock data for multiple symbols
+    pub async fn update_stock_data_bulk(&self, symbols: &[String]) -> Result<(), String> {
+        let today = Utc::now().date_naive().to_string();
+
+        for symbol in symbols {
+            let symbol_upper = symbol.to_uppercase();
+
+            // Check if we already have today's data
+            match self.stock_data_service.has_today_data(&symbol_upper).await {
+                Ok(has_data) => {
+                    if has_data {
+                        continue; // Skip if we already have today's data
+                    }
                 }
                 Err(_) => {
-                    // Continue with predefined matches only
+                    // Continue to fetch if check fails
+                }
+            }
+
+            // Fetch current price from Yahoo Finance
+            match self.yahoo_client.fetch_current_price(symbol).await {
+                Ok(price) => {
+                    let stock_data_request = CreateStockDataRequest {
+                        symbol: symbol_upper.clone(),
+                        price,
+                        volume: None,
+                        data_date: today.clone(),
+                    };
+
+                    if let Err(e) = self
+                        .stock_data_service
+                        .upsert_stock_data(&stock_data_request)
+                        .await
+                    {
+                        eprintln!("Failed to update stock data for {}: {}", symbol, e);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to fetch current price for {}: {}", symbol, e);
                 }
             }
         }
 
-        matches.sort_by(|a, b| {
-            let a_exact = a.symbol.to_lowercase() == query_lower;
-            let b_exact = b.symbol.to_lowercase() == query_lower;
-
-            match (a_exact, b_exact) {
-                (true, false) => std::cmp::Ordering::Less,
-                (false, true) => std::cmp::Ordering::Greater,
-                _ => a.symbol.cmp(&b.symbol),
-            }
-        });
-
-        Ok(matches)
+        Ok(())
     }
 
-    async fn search_yahoo_symbols(
-        &self,
-        query: &str,
-        limit: usize,
-    ) -> Result<Vec<SymbolSuggestion>, String> {
-        let url = format!(
-            "{}/v1/finance/search?q={}&quotesCount={}&newsCount=0",
-            self.base_url,
-            urlencoding::encode(query),
-            limit
-        );
+    /// Get database statistics
+    pub async fn get_database_stats(&self) -> Result<HashMap<String, i64>, String> {
+        let mut stats = HashMap::new();
 
-        let response = match self.client.get(&url).send().await {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!("Yahoo Finance search request failed: {}", e));
+        match self.stock_data_service.get_symbols_with_data().await {
+            Ok(symbols) => {
+                stats.insert("symbols_count".to_string(), symbols.len() as i64);
             }
-        };
-
-        let response_status = response.status();
-
-        let response_text = match response.text().await {
-            Ok(text) => text,
-            Err(e) => {
-                return Err(format!(
-                    "Failed to read Yahoo Finance search response: {}",
-                    e
-                ));
+            Err(_) => {
+                stats.insert("symbols_count".to_string(), 0);
             }
-        };
-
-        if !response_status.is_success() {
-            return Err(format!(
-                "Yahoo Finance search API returned error: HTTP {} - {}",
-                response_status, response_text
-            ));
         }
 
-        let yahoo_response: YahooV1SearchResponse = match serde_json::from_str(&response_text) {
-            Ok(response) => response,
-            Err(e) => {
-                return Err(format!(
-                    "Failed to parse Yahoo Finance search response: {}",
-                    e
-                ));
-            }
-        };
+        Ok(stats)
+    }
 
-        let suggestions: Vec<SymbolSuggestion> = yahoo_response
-            .quotes
-            .into_iter()
-            .filter_map(|quote| {
-                if quote.quote_type == "EQUITY" {
-                    Some(SymbolSuggestion {
-                        symbol: quote.symbol,
-                        name: quote.longname.or(quote.shortname).unwrap_or_default(),
-                        exchange: quote.exch_disp,
-                        asset_type: quote.type_disp,
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect();
+    /// Clean up old stock data
+    pub async fn cleanup_old_stock_data(&self, days_to_keep: i64) -> Result<u64, String> {
+        self.stock_data_service
+            .cleanup_old_data(days_to_keep)
+            .await
+            .map_err(|e| format!("Failed to cleanup old data: {}", e))
+    }
+}
 
-        Ok(suggestions)
+impl Default for StockApiClient {
+    fn default() -> Self {
+        // This will panic if called without a database connection
+        // Consider removing this implementation or requiring explicit initialization
+        panic!(
+            "StockApiClient requires a database connection. Use StockApiClient::new(db) instead."
+        )
     }
 }

@@ -13,12 +13,14 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
-use std::sync::Arc;
+
 use tower_http::cors::CorsLayer;
 use uuid;
 
 pub mod models;
 pub mod stock_api;
+pub mod stock_data_service;
+pub mod yahoo_api;
 
 use models::*;
 use stock_api::StockApiClient;
@@ -26,7 +28,7 @@ use stock_api::StockApiClient;
 #[derive(Clone)]
 struct AppState {
     db: PgPool,
-    stock_client: Arc<StockApiClient>,
+    stock_client: StockApiClient,
     jwt_secret: String,
 }
 
@@ -64,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    let stock_client = Arc::new(StockApiClient::new());
+    let stock_client = StockApiClient::new(pool.clone());
 
     let app_state = AppState {
         db: pool,
@@ -95,6 +97,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/admin/cache/stats", get(get_cache_stats))
         .route("/api/admin/cache/clear", post(clear_cache))
         .route("/api/admin/cache/cleanup", post(cleanup_cache))
+        .route("/api/admin/stock-data/update", post(update_stock_data))
+        .route("/api/admin/stock-data/stats", get(get_database_stats))
+        .route(
+            "/api/admin/stock-data/cleanup",
+            post(cleanup_old_stock_data),
+        )
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             auth_middleware,
@@ -524,6 +532,73 @@ async fn cleanup_cache(
 
     Ok(Json(serde_json::json!({
         "message": "Expired cache entries cleaned up",
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    })))
+}
+
+async fn update_stock_data(
+    State(app_state): State<AppState>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    // Get all unique symbols from purchases
+    let symbols = sqlx::query!("SELECT DISTINCT symbol FROM purchases")
+        .fetch_all(&app_state.db)
+        .await?
+        .into_iter()
+        .map(|row| row.symbol)
+        .collect::<Vec<String>>();
+
+    if let Err(e) = app_state
+        .stock_client
+        .update_stock_data_bulk(&symbols)
+        .await
+    {
+        return Err(AppError::StockApi(format!(
+            "Failed to update stock data: {}",
+            e
+        )));
+    }
+
+    Ok(Json(serde_json::json!({
+        "message": format!("Updated stock data for {} symbols", symbols.len()),
+        "symbols": symbols,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    })))
+}
+
+async fn get_database_stats(
+    State(app_state): State<AppState>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let cache_stats = app_state.stock_client.get_cache_stats();
+    let db_stats = app_state
+        .stock_client
+        .get_database_stats()
+        .await
+        .map_err(|e| AppError::StockApi(format!("Failed to get database stats: {}", e)))?;
+
+    Ok(Json(serde_json::json!({
+        "cache_stats": {
+            "price_cache_entries": cache_stats.0,
+            "chart_cache_entries": cache_stats.1,
+            "symbol_cache_entries": cache_stats.2
+        },
+        "database_stats": db_stats,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    })))
+}
+
+async fn cleanup_old_stock_data(
+    State(app_state): State<AppState>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let days_to_keep = 365; // Keep 1 year of data
+    let deleted_count = app_state
+        .stock_client
+        .cleanup_old_stock_data(days_to_keep)
+        .await
+        .map_err(|e| AppError::StockApi(format!("Failed to cleanup old stock data: {}", e)))?;
+
+    Ok(Json(serde_json::json!({
+        "message": format!("Deleted {} old stock data entries", deleted_count),
+        "days_kept": days_to_keep,
         "timestamp": chrono::Utc::now().to_rfc3339()
     })))
 }

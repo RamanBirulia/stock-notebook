@@ -14,22 +14,19 @@ import { setMobile } from "./store/slices/uiSlice";
 import { selectIsAuthenticated } from "./store/slices/authSlice";
 import Layout from "./components/layout/Layout";
 import ErrorBoundary from "./components/errors/ErrorBoundary";
-import { useI18nReady } from "./hooks/i18n/useI18nReady";
+import { useI18nReady } from "./hooks/useI18nReady";
 
-import {
-  DashboardPage,
-  AddPurchase,
-  StockDetails,
-  Login,
-  LandingPage,
-} from "./pages";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import TermsOfService from "./pages/legal/TermsOfService";
-import NotFound from "./pages/errors/NotFound";
+import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
+import NotFoundPage from "./pages/errors/NotFoundPage";
 import "./i18n";
 import "./index.css";
 import { SkeletonDashboardHeader } from "./components/ui/loading/SkeletonHeader";
 import { SkeletonDashboard } from "./components/ui/loading/Skeleton";
+import DashboardPage from "./pages/DashboardPage";
+import AddPurchasePage from "./pages/AddPurchasePage";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
 
 // Enhanced theme effect hook with proper initialization
 const useThemeEffect = () => {
@@ -93,6 +90,10 @@ const useScrollToTop = () => {
   }, [location.pathname]);
 };
 
+function StockDetails() {
+  return null;
+}
+
 // Router content component (inside Router context)
 const RouterContent: React.FC = () => {
   useScrollToTop();
@@ -114,8 +115,8 @@ const RouterContent: React.FC = () => {
   return (
     <Routes>
       {/* Legal pages - always rendered without layout */}
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 
       {isAuthenticated ? (
         <Route
@@ -125,10 +126,10 @@ const RouterContent: React.FC = () => {
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/add-purchase" element={<AddPurchase />} />
+                <Route path="/add-purchase" element={<AddPurchasePage />} />
                 <Route path="/stock/:symbol" element={<StockDetails />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/404" element={<NotFound />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/404" element={<NotFoundPage />} />
                 {/* Redirect any other route to dashboard when authenticated */}
                 <Route path="*" element={<DashboardPage />} />
               </Routes>
@@ -137,8 +138,8 @@ const RouterContent: React.FC = () => {
         />
       ) : (
         <>
-          <Route path="/login" element={<Login />} />
-          <Route path="/404" element={<NotFound />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<LandingPage />} />
         </>
       )}

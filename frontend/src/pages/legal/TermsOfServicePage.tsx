@@ -56,7 +56,7 @@ const HandDrawnCircle: React.FC<{
   );
 };
 
-const TermsOfService: React.FC = () => {
+const TermsOfServicePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -492,4 +492,4 @@ const TermsOfService: React.FC = () => {
   );
 };
 
-export default TermsOfService;
+export default TermsOfServicePage;
