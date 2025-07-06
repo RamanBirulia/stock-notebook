@@ -51,7 +51,7 @@ Additional Information:
   return (
     <>
       <SEOHead {...seoConfig} />
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full text-center">
           {/* Error Code */}
           <div className="mb-8">

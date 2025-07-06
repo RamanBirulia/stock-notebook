@@ -1,16 +1,9 @@
-import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
 import { store } from "./store";
-import { useAppDispatch, useAppSelector } from "./store";
-import { initializeTheme, updateSystemTheme } from "./store/slices/themeSlice";
-import { setMobile } from "./store/slices/uiSlice";
+import { useAppSelector } from "./store";
 import { selectIsAuthenticated } from "./store/slices/authSlice";
 import Layout from "./components/layout/Layout";
 import ErrorBoundary from "./components/errors/ErrorBoundary";
@@ -27,72 +20,10 @@ import DashboardPage from "./pages/DashboardPage";
 import AddPurchasePage from "./pages/AddPurchasePage";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
-
-// Enhanced theme effect hook with proper initialization
-const useThemeEffect = () => {
-  const dispatch = useAppDispatch();
-  const { isDark, isInitialized } = useAppSelector((state) => state.theme);
-
-  useEffect(() => {
-    // Initialize theme system on app start
-    dispatch(initializeTheme());
-  }, [dispatch]);
-
-  useEffect(() => {
-    // Listen for system theme changes only after initialization
-    if (isInitialized) {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => {
-        dispatch(updateSystemTheme());
-      };
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    }
-  }, [dispatch, isInitialized]);
-
-  useEffect(() => {
-    // Add meta theme-color tag if it doesn't exist
-    if (!document.querySelector('meta[name="theme-color"]')) {
-      const meta = document.createElement("meta");
-      meta.name = "theme-color";
-      meta.content = isDark ? "#1f2937" : "#ffffff";
-      document.getElementsByTagName("head")[0].appendChild(meta);
-    }
-  }, [isDark]);
-};
-
-// Mobile detection hook
-const useMobileDetection = () => {
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const isMobile = window.innerWidth < 768;
-      dispatch(setMobile(isMobile));
-    };
-
-    // Check initial state
-    checkMobile();
-
-    // Listen for resize events
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, [dispatch]);
-};
-
-// Scroll to top hook for route changes
-const useScrollToTop = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-};
-
-function StockDetails() {
-  return null;
-}
+import { useThemeEffect } from "./hooks/useThemeEffect";
+import { useMobileDetection } from "./hooks/useMobileDetection";
+import { useScrollToTop } from "./hooks/useScrollToTop";
+import StockDetailsPage from "./pages/StockDetailsPage";
 
 // Router content component (inside Router context)
 const RouterContent: React.FC = () => {
@@ -127,7 +58,7 @@ const RouterContent: React.FC = () => {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/add-purchase" element={<AddPurchasePage />} />
-                <Route path="/stock/:symbol" element={<StockDetails />} />
+                <Route path="/stock/:symbol" element={<StockDetailsPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/404" element={<NotFoundPage />} />
                 {/* Redirect any other route to dashboard when authenticated */}

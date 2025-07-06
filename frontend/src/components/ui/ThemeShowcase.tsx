@@ -45,7 +45,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
         };
       case "system":
         return {
-          bg: "bg-gradient-to-br from-purple-50 to-blue-50",
+          bg: "bg-linear-to-br from-purple-50 to-blue-50",
           border: "border-purple-200",
           text: "text-purple-900",
           accent: "bg-purple-500",

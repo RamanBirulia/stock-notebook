@@ -26,7 +26,7 @@ const DashboardPage: React.FC = () => {
       {isDashboardReady && !hasDashboardItems && <EmptyDashboard />}
 
       {dashboardData && isDashboardReady && hasDashboardItems && (
-        <div className="space-y-6 @container">
+        <div className="space-y-6 @container/dashboard">
           <DashboardHeader />
           <DashboardStats dashboardData={dashboardData} />
           <PortfolioTable stocks={dashboardData.stocks} />

@@ -14,7 +14,7 @@ impl YahooFinanceClient {
     pub fn new() -> Self {
         Self {
             client: Client::new(),
-            base_url: "http://localhost".to_string(), // base_url: "https://query1.finance.yahoo.com".to_string(),
+            base_url: "https://query1.finance.yahoo.com".to_string(),
         }
     }
 

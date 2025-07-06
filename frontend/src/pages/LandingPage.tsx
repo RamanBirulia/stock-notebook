@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
         {...generateSEOConfig("HOME")}
         structuredData={generateApplicationStructuredData()}
       />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
         {/* Top Navigation Bar */}
         {isI18Ready ? (
           <LandingHeader handleSignInClick={handleSignInClick} />
@@ -124,7 +124,7 @@ const LandingPage: React.FC = () => {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
                 Stock Tracker
               </span>
             </h1>
@@ -147,7 +147,7 @@ const LandingPage: React.FC = () => {
             <div className="lg:col-span-7 relative">
               <div className="flex items-start space-x-4">
                 {/* Hand-drawn description */}
-                <div className="flex-shrink-0 mt-8">
+                <div className="shrink-0 mt-8">
                   <SpeechBubble
                     direction="right"
                     color="secondary"
@@ -203,7 +203,7 @@ const LandingPage: React.FC = () => {
                 </div>
 
                 {/* Hand-drawn description */}
-                <div className="flex-shrink-0 mt-8">
+                <div className="shrink-0 mt-8">
                   <SpeechBubble
                     direction="left"
                     color="accent"

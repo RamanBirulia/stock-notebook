@@ -115,8 +115,8 @@ const ThemeToggle: React.FC = () => {
           absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200
           ${
             isDark
-              ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10"
-              : "bg-gradient-to-r from-blue-500/5 to-purple-500/5"
+              ? "bg-linear-to-r from-blue-500/10 to-purple-500/10"
+              : "bg-linear-to-r from-blue-500/5 to-purple-500/5"
           }
         `}
         />

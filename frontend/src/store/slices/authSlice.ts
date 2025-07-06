@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface User {
   id: string;
@@ -14,48 +14,73 @@ export interface AuthState {
   error: string | null;
 }
 
+const getInitialToken = () => {
+  try {
+    return typeof window !== "undefined"
+      ? localStorage.getItem("auth_token")
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  token: localStorage.getItem('auth_token'),
+  token: getInitialToken(),
   isLoading: false,
   error: null,
 };
 
 // Check if there's a valid token in localStorage on initialization
-if (initialState.token) {
-  try {
-    // Basic token validation - check if it's not expired
-    const payload = JSON.parse(atob(initialState.token.split('.')[1]));
-    const currentTime = Date.now() / 1000;
+const initializeAuth = () => {
+  if (initialState.token) {
+    try {
+      // Basic token validation - check if it's not expired
+      const payload = JSON.parse(atob(initialState.token.split(".")[1]));
+      const currentTime = Date.now() / 1000;
 
-    if (payload.exp > currentTime) {
-      initialState.isAuthenticated = true;
-      initialState.user = {
-        id: payload.user_id,
-        username: payload.username,
-      };
-    } else {
-      // Token expired, clear it
-      localStorage.removeItem('auth_token');
+      if (payload.exp > currentTime) {
+        initialState.isAuthenticated = true;
+        initialState.user = {
+          id: payload.sub,
+          username: payload.username,
+          email: payload.email,
+        };
+      } else {
+        // Token expired, clear it
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.removeItem("auth_token");
+        }
+        initialState.token = null;
+      }
+    } catch (error) {
+      // Invalid token, clear it
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.removeItem("auth_token");
+      }
       initialState.token = null;
     }
-  } catch (error) {
-    // Invalid token, clear it
-    localStorage.removeItem('auth_token');
-    initialState.token = null;
   }
+};
+
+// Only initialize if we're in a browser environment
+if (typeof window !== "undefined") {
+  initializeAuth();
 }
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     loginStart: (state) => {
       state.isLoading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    loginSuccess: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>,
+    ) => {
       state.isLoading = false;
       state.isAuthenticated = true;
       state.user = action.payload.user;
@@ -63,7 +88,9 @@ const authSlice = createSlice({
       state.error = null;
 
       // Store token in localStorage
-      localStorage.setItem('auth_token', action.payload.token);
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("auth_token", action.payload.token);
+      }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -73,13 +100,18 @@ const authSlice = createSlice({
       state.error = action.payload;
 
       // Clear token from localStorage
-      localStorage.removeItem('auth_token');
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.removeItem("auth_token");
+      }
     },
     registerStart: (state) => {
       state.isLoading = true;
       state.error = null;
     },
-    registerSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    registerSuccess: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>,
+    ) => {
       state.isLoading = false;
       state.isAuthenticated = true;
       state.user = action.payload.user;
@@ -87,7 +119,9 @@ const authSlice = createSlice({
       state.error = null;
 
       // Store token in localStorage
-      localStorage.setItem('auth_token', action.payload.token);
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("auth_token", action.payload.token);
+      }
     },
     registerFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -97,7 +131,9 @@ const authSlice = createSlice({
       state.error = action.payload;
 
       // Clear token from localStorage
-      localStorage.removeItem('auth_token');
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.removeItem("auth_token");
+      }
     },
     logout: (state) => {
       state.isAuthenticated = false;
@@ -107,7 +143,9 @@ const authSlice = createSlice({
       state.isLoading = false;
 
       // Clear token from localStorage
-      localStorage.removeItem('auth_token');
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.removeItem("auth_token");
+      }
     },
     clearError: (state) => {
       state.error = null;
@@ -136,8 +174,10 @@ export default authSlice.reducer;
 
 // Selectors
 export const selectAuth = (state: { auth: AuthState }) => state.auth;
-export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
+export const selectIsAuthenticated = (state: { auth: AuthState }) =>
+  state.auth.isAuthenticated;
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectAuthToken = (state: { auth: AuthState }) => state.auth.token;
-export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.isLoading;
+export const selectAuthLoading = (state: { auth: AuthState }) =>
+  state.auth.isLoading;
 export const selectAuthError = (state: { auth: AuthState }) => state.auth.error;

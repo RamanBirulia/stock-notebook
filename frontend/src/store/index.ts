@@ -67,7 +67,7 @@ export const store = configureStore({
       .concat(apiErrorHandlingMiddleware),
 
   // Enable Redux DevTools in development
-  devTools: process.env.NODE_ENV !== "production",
+  devTools: import.meta.env.DEV,
 });
 
 // Enable automatic refetching when network connectivity is restored

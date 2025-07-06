@@ -9,7 +9,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: "en",
-    debug: process.env.NODE_ENV === "development",
+    debug: import.meta.env.DEV,
 
     // Supported languages
     supportedLngs: ["en", "es", "ru"],
@@ -64,7 +64,7 @@ i18n
 
     // Error handling
     missingKeyHandler: (lng, ns, key, fallbackValue) => {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.warn(`Missing translation key: ${key} for language: ${lng}`);
       }
     },

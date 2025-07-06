@@ -18,8 +18,8 @@ import type {
 export const stockApi = createApi({
   reducerPath: "stockApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_API_URL
-      ? `${process.env.REACT_APP_API_URL}/api`
+    baseUrl: import.meta.env.VITE_API_URL
+      ? `${import.meta.env.VITE_API_URL}/api`
       : "/api",
     prepareHeaders: (headers, { getState }) => {
       headers.set("Content-Type", "application/json");

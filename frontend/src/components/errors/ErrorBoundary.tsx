@@ -40,7 +40,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     this.setState({ errorInfo });
 
     // Log error to console in development
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
@@ -51,7 +51,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
     // In production, you might want to log to an error reporting service
     // e.g., Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === "production") {
+    if (import.meta.env.PROD) {
       // logErrorToService(error, errorInfo, this.state.errorId);
     }
   }
@@ -118,7 +118,7 @@ Additional Information:
 
       // Default error UI
       return (
-        <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
           <div className="max-w-2xl w-full">
             <Card className="p-8 text-center">
               {/* Error Icon */}
@@ -135,7 +135,7 @@ Additional Information:
               </div>
 
               {/* Error Details in Development */}
-              {process.env.NODE_ENV === "development" && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-left">
                   <h3 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
                     Development Error Details:
@@ -157,7 +157,7 @@ Additional Information:
               )}
 
               {/* Error ID for Production */}
-              {process.env.NODE_ENV === "production" && (
+              {import.meta.env.PROD && (
                 <div className="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Error ID:{" "}

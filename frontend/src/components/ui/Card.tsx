@@ -15,7 +15,7 @@ export const Card: React.FC<CardProps> = ({
   hover = false,
 }) => {
   const baseStyles =
-    "bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700";
+    "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700";
 
   const paddingStyles = {
     none: "",
