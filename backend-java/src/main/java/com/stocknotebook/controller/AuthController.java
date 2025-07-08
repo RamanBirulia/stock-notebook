@@ -33,7 +33,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> login(
         @Valid @RequestBody LoginRequestDTO loginRequest
     ) {
-        log.debug(
+        log.info(
             "Login request received for username: {}",
             loginRequest.username()
         );
@@ -65,7 +65,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> register(
         @Valid @RequestBody RegisterRequestDTO registerRequest
     ) {
-        log.debug(
+        log.info(
             "Registration request received for username: {}",
             registerRequest.username()
         );
@@ -99,7 +99,7 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<UserInfoDTO> getCurrentUser() {
-        log.debug("Current user info request received");
+        log.info("Current user info request received");
 
         try {
             UserInfoDTO userInfo = authService.getCurrentUserInfo();
@@ -122,7 +122,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> refresh(
         @RequestBody RefreshTokenRequestDTO refreshRequest
     ) {
-        log.debug("Token refresh request received");
+        log.info("Token refresh request received");
 
         try {
             AuthResponseDTO response = authService.refreshToken(
@@ -147,7 +147,7 @@ public class AuthController {
     public ResponseEntity<Void> changePassword(
         @Valid @RequestBody ChangePasswordRequestDTO changePasswordRequest
     ) {
-        log.debug("Change password request received");
+        log.info("Change password request received");
 
         try {
             authService.changePassword(
@@ -175,7 +175,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        log.debug("Logout request received");
+        log.info("Logout request received");
 
         // In a stateless JWT implementation, logout is typically handled client-side
         // by removing the token from storage. Server-side logout would require

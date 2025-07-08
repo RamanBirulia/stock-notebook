@@ -131,7 +131,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<UserDTO> findById(Long id) {
-        log.debug("Finding user by id: {}", id);
+        log.info("Finding user by id: {}", id);
         return userRepository.findById(id)
             .map(this::mapToDTO);
     }
@@ -343,14 +343,14 @@ public class StockService {
 
     @Cacheable(value = "stock-prices", key = "#symbol")
     public StockPriceDTO getCurrentPrice(String symbol) {
-        log.debug("Fetching current price for symbol: {}", symbol);
+        log.info("Fetching current price for symbol: {}", symbol);
         BigDecimal price = yahooFinanceClient.getPrice(symbol);
         return new StockPriceDTO(symbol, price, LocalDateTime.now());
     }
 
     @CacheEvict(value = "stock-prices", key = "#symbol")
     public void evictPriceCache(String symbol) {
-        log.debug("Evicting cache for symbol: {}", symbol);
+        log.info("Evicting cache for symbol: {}", symbol);
     }
 
     @Transactional(readOnly = true)

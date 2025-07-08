@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +53,7 @@ public class AuthService {
      * Authenticate user and return auth response
      */
     public AuthResponseDTO authenticateUser(LoginRequestDTO loginRequest) {
-        log.debug("Authenticating user: {}", loginRequest.username());
+        log.info("Authenticating user: {}", loginRequest.username());
 
         Optional<User> userOpt = userService.verifyCredentials(
             loginRequest.username(),
@@ -90,7 +91,7 @@ public class AuthService {
      * Register new user and return auth response
      */
     public AuthResponseDTO registerUser(RegisterRequestDTO registerRequest) {
-        log.debug("Registering user: {}", registerRequest.username());
+        log.info("Registering user: {}", registerRequest.username());
 
         // Validate password confirmation
         if (!registerRequest.isPasswordConfirmed()) {
@@ -135,7 +136,7 @@ public class AuthService {
      */
     @Transactional(readOnly = true)
     public UserInfoDTO getCurrentUserInfo() {
-        log.debug("Getting current user info");
+        log.info("Getting current user info");
 
         Optional<User> userOpt = getCurrentUser();
         if (userOpt.isEmpty()) {
@@ -155,7 +156,7 @@ public class AuthService {
      * Change user password
      */
     public void changePassword(String currentPassword, String newPassword) {
-        log.debug("Changing password for current user");
+        log.info("Changing password for current user");
 
         Optional<User> userOpt = getCurrentUser();
         if (userOpt.isEmpty()) {
@@ -185,7 +186,7 @@ public class AuthService {
      * Generate JWT token for a user
      */
     public String generateToken(User user) {
-        log.debug("Generating JWT token for user: {}", user.getUsername());
+        log.info("Generating JWT token for user: {}", user.getUsername());
 
         Instant now = Instant.now();
         Instant expiration = now.plus(jwtExpirationMs, ChronoUnit.MILLIS);
@@ -214,7 +215,7 @@ public class AuthService {
             String userIdStr = claims.getSubject();
             UUID userId = UUID.fromString(userIdStr);
 
-            log.debug("Token validated successfully for user ID: {}", userId);
+            log.info("Token validated successfully for user ID: {}", userId);
             return Optional.of(userId);
         } catch (ExpiredJwtException e) {
             log.warn("JWT token is expired: {}", e.getMessage());
@@ -258,7 +259,7 @@ public class AuthService {
 
             return Optional.ofNullable(claims.get("username", String.class));
         } catch (Exception e) {
-            log.debug("Failed to extract username from token", e);
+            log.info("Failed to extract username from token", e);
             return Optional.empty();
         }
     }
@@ -279,7 +280,7 @@ public class AuthService {
         } catch (ExpiredJwtException e) {
             return true;
         } catch (Exception e) {
-            log.debug("Error checking token expiration", e);
+            log.info("Error checking token expiration", e);
             return true;
         }
     }
@@ -310,7 +311,7 @@ public class AuthService {
 
             return Optional.empty();
         } catch (Exception e) {
-            log.debug("Error getting current user from security context", e);
+            log.info("Error getting current user from security context", e);
             return Optional.empty();
         }
     }
@@ -339,7 +340,7 @@ public class AuthService {
 
             return Optional.empty();
         } catch (Exception e) {
-            log.debug("Error getting current user ID from security context", e);
+            log.info("Error getting current user ID from security context", e);
             return Optional.empty();
         }
     }
@@ -348,7 +349,7 @@ public class AuthService {
      * Generate refresh token for a user
      */
     public String generateRefreshToken(User user) {
-        log.debug("Generating refresh token for user: {}", user.getUsername());
+        log.info("Generating refresh token for user: {}", user.getUsername());
 
         // Generate refresh token with longer expiration (7 days)
         Instant now = Instant.now();
@@ -369,7 +370,7 @@ public class AuthService {
      * Validate refresh token and get user
      */
     public Optional<User> validateRefreshToken(String refreshToken) {
-        log.debug("Validating refresh token");
+        log.info("Validating refresh token");
 
         try {
             Claims claims = Jwts.parser()
@@ -389,7 +390,7 @@ public class AuthService {
 
             return userService.findById(userId);
         } catch (Exception e) {
-            log.debug("Failed to validate refresh token", e);
+            log.info("Failed to validate refresh token", e);
             return Optional.empty();
         }
     }
@@ -398,7 +399,7 @@ public class AuthService {
      * Refresh JWT token
      */
     public AuthResponseDTO refreshToken(String refreshToken) {
-        log.debug("Refreshing JWT token");
+        log.info("Refreshing JWT token");
 
         Optional<User> userOpt = validateRefreshToken(refreshToken);
         if (userOpt.isEmpty()) {
@@ -470,8 +471,11 @@ public class AuthService {
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
-            // Return user roles/authorities if needed
-            return java.util.Collections.emptyList();
+            // For now, all authenticated users have USER role
+            // In the future, this could be extended to support different roles
+            return java.util.Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_USER")
+            );
         }
 
         @Override

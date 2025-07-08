@@ -3,6 +3,10 @@ package com.stocknotebook.controller;
 import com.stocknotebook.dto.response.StockPriceDTO;
 import com.stocknotebook.dto.response.SymbolSuggestionDTO;
 import com.stocknotebook.service.StockService;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,16 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/stocks")
 public class StockController {
 
-    private static final Logger log = LoggerFactory.getLogger(StockController.class);
+    private static final Logger log = LoggerFactory.getLogger(
+        StockController.class
+    );
 
     private final StockService stockService;
 
@@ -33,8 +34,10 @@ public class StockController {
      */
     @GetMapping("/{symbol}/price")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<StockPriceDTO> getCurrentPrice(@PathVariable String symbol) {
-        log.debug("Get current price request received for symbol: {}", symbol);
+    public ResponseEntity<StockPriceDTO> getCurrentPrice(
+        @PathVariable String symbol
+    ) {
+        log.info("Get current price request received for symbol: {}", symbol);
 
         try {
             StockPriceDTO price = stockService.getCurrentPrice(symbol);
@@ -44,7 +47,9 @@ public class StockController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Error getting current price for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -54,15 +59,23 @@ public class StockController {
     @PostMapping("/prices")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<StockPriceDTO>> getMultiplePrices(
-            @RequestBody List<String> symbols) {
-        log.debug("Get multiple prices request received for {} symbols", symbols.size());
+        @RequestBody List<String> symbols
+    ) {
+        log.info(
+            "Get multiple prices request received for {} symbols",
+            symbols.size()
+        );
 
         try {
-            List<StockPriceDTO> prices = stockService.getMultiplePrices(symbols);
+            List<StockPriceDTO> prices = stockService.getMultiplePrices(
+                symbols
+            );
             return ResponseEntity.ok(prices);
         } catch (Exception e) {
             log.error("Error getting multiple prices", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -71,21 +84,31 @@ public class StockController {
      */
     @GetMapping("/{symbol}/chart")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<com.stocknotebook.client.YahooFinanceClient.PricePoint>> getChartData(
-            @PathVariable String symbol,
-            @RequestParam(defaultValue = "1M") String period) {
-        log.debug("Get chart data request received for symbol: {} with period: {}", symbol, period);
+    public ResponseEntity<
+        List<com.stocknotebook.client.YahooFinanceClient.PricePoint>
+    > getChartData(
+        @PathVariable String symbol,
+        @RequestParam(defaultValue = "1M") String period
+    ) {
+        log.info(
+            "Get chart data request received for symbol: {} with period: {}",
+            symbol,
+            period
+        );
 
         try {
-            List<com.stocknotebook.client.YahooFinanceClient.PricePoint> chartData =
-                stockService.getChartData(symbol, period);
+            List<
+                com.stocknotebook.client.YahooFinanceClient.PricePoint
+            > chartData = stockService.getChartData(symbol, period);
             return ResponseEntity.ok(chartData);
         } catch (RuntimeException e) {
             log.warn("Failed to get chart data for symbol: {}", symbol);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Error getting chart data for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -95,19 +118,29 @@ public class StockController {
     @GetMapping("/search")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<SymbolSuggestionDTO>> searchSymbols(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "10") int limit) {
-        log.debug("Search symbols request received for query: {} with limit: {}", query, limit);
+        @RequestParam String query,
+        @RequestParam(defaultValue = "10") int limit
+    ) {
+        log.info(
+            "Search symbols request received for query: {} with limit: {}",
+            query,
+            limit
+        );
 
         try {
-            List<SymbolSuggestionDTO> suggestions = stockService.searchSymbols(query, limit);
+            List<SymbolSuggestionDTO> suggestions = stockService.searchSymbols(
+                query,
+                limit
+            );
             return ResponseEntity.ok(suggestions);
         } catch (RuntimeException e) {
             log.warn("Failed to search symbols for query: {}", query);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Error searching symbols for query: {}", query, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -117,18 +150,33 @@ public class StockController {
     @GetMapping("/{symbol}/history")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<StockPriceDTO>> getHistoricalData(
-            @PathVariable String symbol,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
-        log.debug("Get historical data request received for symbol: {} from {} to {}",
-                 symbol, startDate, endDate);
+        @PathVariable String symbol,
+        @RequestParam LocalDate startDate,
+        @RequestParam LocalDate endDate
+    ) {
+        log.info(
+            "Get historical data request received for symbol: {} from {} to {}",
+            symbol,
+            startDate,
+            endDate
+        );
 
         try {
-            List<StockPriceDTO> historicalData = stockService.getHistoricalData(symbol, startDate, endDate);
+            List<StockPriceDTO> historicalData = stockService.getHistoricalData(
+                symbol,
+                startDate,
+                endDate
+            );
             return ResponseEntity.ok(historicalData);
         } catch (Exception e) {
-            log.error("Error getting historical data for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error(
+                "Error getting historical data for symbol: {}",
+                symbol,
+                e
+            );
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -137,17 +185,23 @@ public class StockController {
      */
     @GetMapping("/{symbol}/latest")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<StockPriceDTO> getLatestData(@PathVariable String symbol) {
-        log.debug("Get latest data request received for symbol: {}", symbol);
+    public ResponseEntity<StockPriceDTO> getLatestData(
+        @PathVariable String symbol
+    ) {
+        log.info("Get latest data request received for symbol: {}", symbol);
 
         try {
-            Optional<StockPriceDTO> latestData = stockService.getLatestData(symbol);
+            Optional<StockPriceDTO> latestData = stockService.getLatestData(
+                symbol
+            );
             return latestData
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error getting latest data for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -157,16 +211,27 @@ public class StockController {
     @GetMapping("/{symbol}/exists")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Boolean> hasDataForDate(
-            @PathVariable String symbol,
-            @RequestParam LocalDate date) {
-        log.debug("Check data existence request received for symbol: {} on date: {}", symbol, date);
+        @PathVariable String symbol,
+        @RequestParam LocalDate date
+    ) {
+        log.info(
+            "Check data existence request received for symbol: {} on date: {}",
+            symbol,
+            date
+        );
 
         try {
             boolean exists = stockService.hasDataForDate(symbol, date);
             return ResponseEntity.ok(exists);
         } catch (Exception e) {
-            log.error("Error checking data existence for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error(
+                "Error checking data existence for symbol: {}",
+                symbol,
+                e
+            );
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -176,14 +241,16 @@ public class StockController {
     @GetMapping("/symbols")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<String>> getAllSymbols() {
-        log.debug("Get all symbols request received");
+        log.info("Get all symbols request received");
 
         try {
             List<String> symbols = stockService.getAllSymbols();
             return ResponseEntity.ok(symbols);
         } catch (Exception e) {
             log.error("Error getting all symbols", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -193,14 +260,17 @@ public class StockController {
     @GetMapping("/statistics")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getStockDataStatistics() {
-        log.debug("Get stock data statistics request received");
+        log.info("Get stock data statistics request received");
 
         try {
-            Map<String, Object> statistics = stockService.getStockDataStatistics();
+            Map<String, Object> statistics =
+                stockService.getStockDataStatistics();
             return ResponseEntity.ok(statistics);
         } catch (Exception e) {
             log.error("Error getting stock data statistics", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -210,20 +280,26 @@ public class StockController {
     @PostMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateStockDataBulk(
-            @RequestBody List<String> symbols) {
-        log.debug("Bulk update request received for {} symbols", symbols.size());
+        @RequestBody List<String> symbols
+    ) {
+        log.info("Bulk update request received for {} symbols", symbols.size());
 
         try {
             int updatedCount = stockService.updateStockDataBulk(symbols);
             Map<String, Object> response = Map.of(
-                "totalSymbols", symbols.size(),
-                "updatedCount", updatedCount,
-                "message", "Stock data update completed"
+                "totalSymbols",
+                symbols.size(),
+                "updatedCount",
+                updatedCount,
+                "message",
+                "Stock data update completed"
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error updating stock data bulk", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -233,20 +309,29 @@ public class StockController {
     @DeleteMapping("/cleanup")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> cleanupOldData(
-            @RequestParam(defaultValue = "365") int daysToKeep) {
-        log.debug("Cleanup old data request received with daysToKeep: {}", daysToKeep);
+        @RequestParam(defaultValue = "365") int daysToKeep
+    ) {
+        log.info(
+            "Cleanup old data request received with daysToKeep: {}",
+            daysToKeep
+        );
 
         try {
             int deletedCount = stockService.cleanupOldData(daysToKeep);
             Map<String, Object> response = Map.of(
-                "deletedCount", deletedCount,
-                "daysToKeep", daysToKeep,
-                "message", "Old stock data cleanup completed"
+                "deletedCount",
+                deletedCount,
+                "daysToKeep",
+                daysToKeep,
+                "message",
+                "Old stock data cleanup completed"
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error cleaning up old data", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -256,14 +341,16 @@ public class StockController {
     @DeleteMapping("/{symbol}/cache/price")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> evictPriceCache(@PathVariable String symbol) {
-        log.debug("Evict price cache request received for symbol: {}", symbol);
+        log.info("Evict price cache request received for symbol: {}", symbol);
 
         try {
             stockService.evictPriceCache(symbol);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error evicting price cache for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -273,16 +360,23 @@ public class StockController {
     @DeleteMapping("/{symbol}/cache/chart")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> evictChartCache(
-            @PathVariable String symbol,
-            @RequestParam String period) {
-        log.debug("Evict chart cache request received for symbol: {} and period: {}", symbol, period);
+        @PathVariable String symbol,
+        @RequestParam String period
+    ) {
+        log.info(
+            "Evict chart cache request received for symbol: {} and period: {}",
+            symbol,
+            period
+        );
 
         try {
             stockService.evictChartCache(symbol, period);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error evicting chart cache for symbol: {}", symbol, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 
@@ -292,14 +386,16 @@ public class StockController {
     @DeleteMapping("/cache/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> evictAllCaches() {
-        log.debug("Evict all caches request received");
+        log.info("Evict all caches request received");
 
         try {
             stockService.evictAllCaches();
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error evicting all caches", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
         }
     }
 }

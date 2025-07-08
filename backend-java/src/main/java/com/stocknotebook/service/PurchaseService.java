@@ -52,7 +52,7 @@ public class PurchaseService {
         UUID userId,
         CreatePurchaseRequestDTO request
     ) {
-        log.debug(
+        log.info(
             "Creating purchase for user: {}, symbol: {}",
             userId,
             request.symbol()
@@ -88,7 +88,7 @@ public class PurchaseService {
      */
     @Transactional(readOnly = true)
     public List<PurchaseResponseDTO> getUserPurchases(UUID userId) {
-        log.debug("Getting purchases for user: {}", userId);
+        log.info("Getting purchases for user: {}", userId);
 
         return purchaseRepository
             .findByUserId(userId)
@@ -105,7 +105,7 @@ public class PurchaseService {
         UUID userId,
         String symbol
     ) {
-        log.debug(
+        log.info(
             "Getting purchases for user: {} and symbol: {}",
             userId,
             symbol
@@ -123,7 +123,7 @@ public class PurchaseService {
      */
     @Transactional(readOnly = true)
     public PortfolioSummaryDTO getPortfolioSummary(UUID userId) {
-        log.debug("Getting portfolio summary for user: {}", userId);
+        log.info("Getting portfolio summary for user: {}", userId);
 
         List<Purchase> purchases = purchaseRepository.findByUserId(userId);
 
@@ -196,7 +196,7 @@ public class PurchaseService {
         LocalDate startDate,
         LocalDate endDate
     ) {
-        log.debug(
+        log.info(
             "Getting purchases for user: {} between {} and {}",
             userId,
             startDate,
@@ -218,7 +218,7 @@ public class PurchaseService {
         UUID userId,
         int limit
     ) {
-        log.debug("Getting {} recent purchases for user: {}", limit, userId);
+        log.info("Getting {} recent purchases for user: {}", limit, userId);
 
         return purchaseRepository
             .findRecentPurchasesByUserId(userId, limit)
@@ -232,7 +232,7 @@ public class PurchaseService {
      */
     @Transactional(readOnly = true)
     public List<String> getUserSymbols(UUID userId) {
-        log.debug("Getting symbols for user: {}", userId);
+        log.info("Getting symbols for user: {}", userId);
         return purchaseRepository.findDistinctSymbolsByUserId(userId);
     }
 
@@ -243,7 +243,7 @@ public class PurchaseService {
         UUID purchaseId,
         CreatePurchaseRequestDTO request
     ) {
-        log.debug("Updating purchase: {}", purchaseId);
+        log.info("Updating purchase: {}", purchaseId);
 
         return purchaseRepository
             .findById(purchaseId)
@@ -268,7 +268,7 @@ public class PurchaseService {
      * Delete a purchase
      */
     public boolean deletePurchase(UUID purchaseId) {
-        log.debug("Deleting purchase: {}", purchaseId);
+        log.info("Deleting purchase: {}", purchaseId);
 
         if (!purchaseRepository.existsById(purchaseId)) {
             log.warn("Purchase not found for deletion: {}", purchaseId);
@@ -285,7 +285,7 @@ public class PurchaseService {
      */
     @Transactional(readOnly = true)
     public Optional<PurchaseResponseDTO> findById(UUID purchaseId) {
-        log.debug("Finding purchase by ID: {}", purchaseId);
+        log.info("Finding purchase by ID: {}", purchaseId);
 
         return purchaseRepository.findById(purchaseId).map(this::mapToDTO);
     }

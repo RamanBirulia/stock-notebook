@@ -51,10 +51,11 @@ server:
 
 logging:
   level:
-    com.stocknotebook: ${LOG_LEVEL:INFO}
-    org.springframework.web: ${WEB_LOG_LEVEL:WARN}
-    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
-    org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_BIND_LOG_LEVEL:WARN}
+    root: ${ROOT_LOG_LEVEL:TRACE}
+    # com.stocknotebook: ${LOG_LEVEL:TRACE}
+    # org.springframework.web: ${WEB_LOG_LEVEL:WARN}
+    # org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+    # org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_BIND_LOG_LEVEL:WARN}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 

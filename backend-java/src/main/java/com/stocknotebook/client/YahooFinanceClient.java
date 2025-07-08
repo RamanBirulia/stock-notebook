@@ -57,7 +57,7 @@ public class YahooFinanceClient {
      * @throws RuntimeException if unable to fetch price
      */
     public BigDecimal fetchCurrentPrice(String symbol) {
-        log.debug("Fetching current price for symbol: {}", symbol);
+        log.info("Fetching current price for symbol: {}", symbol);
 
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
             .path("/v8/finance/chart/{symbol}")
@@ -93,7 +93,7 @@ public class YahooFinanceClient {
                         BigDecimal price = BigDecimal.valueOf(
                             priceNode.asDouble()
                         );
-                        log.debug(
+                        log.info(
                             "Successfully fetched price for {}: {}",
                             symbol,
                             price
@@ -150,7 +150,7 @@ public class YahooFinanceClient {
      * @throws RuntimeException if unable to fetch chart data
      */
     public List<PricePoint> fetchChartData(String symbol, String period) {
-        log.debug(
+        log.info(
             "Fetching chart data for symbol: {} with period: {}",
             symbol,
             period
@@ -223,7 +223,7 @@ public class YahooFinanceClient {
                             }
                         }
 
-                        log.debug(
+                        log.info(
                             "Successfully fetched {} price points for {}",
                             pricePoints.size(),
                             symbol
@@ -278,7 +278,7 @@ public class YahooFinanceClient {
      * @throws RuntimeException if unable to search symbols
      */
     public List<SymbolSuggestionDTO> searchSymbols(String query, int limit) {
-        log.debug(
+        log.info(
             "Searching symbols for query: {} with limit: {}",
             query,
             limit
@@ -347,7 +347,7 @@ public class YahooFinanceClient {
                     }
                 }
 
-                log.debug(
+                log.info(
                     "Successfully found {} symbol suggestions for query: {}",
                     suggestions.size(),
                     query

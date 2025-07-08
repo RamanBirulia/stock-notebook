@@ -1,18 +1,23 @@
 package com.stocknotebook.controller;
 
+import java.sql.Connection;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 public class HealthController {
+
+    private static final Logger log = LoggerFactory.getLogger(
+        HealthController.class
+    );
 
     @Autowired
     private DataSource dataSource;
@@ -43,6 +48,8 @@ public class HealthController {
         response.put("status", "ok");
         response.put("message", "Stock tracker backend is running");
         response.put("timestamp", LocalDateTime.now());
+
+        log.info("Health request received for username");
 
         return ResponseEntity.ok(response);
     }

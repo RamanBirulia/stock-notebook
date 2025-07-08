@@ -43,7 +43,7 @@ public class StockService {
      */
     @Cacheable(value = "stockPrices", key = "#symbol")
     public StockPriceDTO getCurrentPrice(String symbol) {
-        log.debug("Getting current price for symbol: {}", symbol);
+        log.info("Getting current price for symbol: {}", symbol);
 
         String upperSymbol = symbol.toUpperCase();
         LocalDate today = LocalDate.now();
@@ -52,7 +52,7 @@ public class StockService {
         Optional<StockData> todayData =
             stockDataRepository.findBySymbolAndDataDate(upperSymbol, today);
         if (todayData.isPresent()) {
-            log.debug("Found today's data in database for symbol: {}", symbol);
+            log.info("Found today's data in database for symbol: {}", symbol);
             return mapToStockPriceDTO(todayData.get());
         }
 
@@ -102,7 +102,7 @@ public class StockService {
      */
     @Transactional(readOnly = true)
     public List<StockPriceDTO> getMultiplePrices(List<String> symbols) {
-        log.debug("Getting current prices for {} symbols", symbols.size());
+        log.info("Getting current prices for {} symbols", symbols.size());
 
         return symbols
             .stream()
@@ -115,7 +115,7 @@ public class StockService {
      */
     @Transactional(readOnly = true)
     public Map<String, BigDecimal> getPortfolioValues(List<String> symbols) {
-        log.debug("Getting portfolio values for {} symbols", symbols.size());
+        log.info("Getting portfolio values for {} symbols", symbols.size());
 
         return symbols
             .stream()
@@ -135,7 +135,7 @@ public class StockService {
         String symbol,
         String period
     ) {
-        log.debug(
+        log.info(
             "Getting chart data for symbol: {} with period: {}",
             symbol,
             period
@@ -159,7 +159,7 @@ public class StockService {
             hasRecentData(dbData, endDate) &&
             hasSufficientCoverage(dbData, startDate, endDate, period)
         ) {
-            log.debug("Using database data for chart: {}", symbol);
+            log.info("Using database data for chart: {}", symbol);
             return convertToYahooFinanceFormat(dbData);
         }
 
@@ -198,7 +198,7 @@ public class StockService {
      */
     @Cacheable(value = "symbolSearch", key = "#query + '_' + #limit")
     public List<SymbolSuggestionDTO> searchSymbols(String query, int limit) {
-        log.debug(
+        log.info(
             "Searching symbols for query: {} with limit: {}",
             query,
             limit
@@ -224,7 +224,7 @@ public class StockService {
         LocalDate startDate,
         LocalDate endDate
     ) {
-        log.debug(
+        log.info(
             "Getting historical data for symbol: {} from {} to {}",
             symbol,
             startDate,
@@ -243,7 +243,7 @@ public class StockService {
      */
     @Transactional(readOnly = true)
     public Optional<StockPriceDTO> getLatestData(String symbol) {
-        log.debug("Getting latest data for symbol: {}", symbol);
+        log.info("Getting latest data for symbol: {}", symbol);
 
         return stockDataRepository
             .findLatestBySymbol(symbol.toUpperCase())
@@ -266,7 +266,7 @@ public class StockService {
      */
     @Transactional(readOnly = true)
     public List<String> getAllSymbols() {
-        log.debug("Getting all unique symbols");
+        log.info("Getting all unique symbols");
         return stockDataRepository.findAllUniqueSymbols();
     }
 
@@ -274,7 +274,7 @@ public class StockService {
      * Update stock data for multiple symbols
      */
     public int updateStockDataBulk(List<String> symbols) {
-        log.debug("Updating stock data for {} symbols", symbols.size());
+        log.info("Updating stock data for {} symbols", symbols.size());
 
         LocalDate today = LocalDate.now();
 
@@ -288,7 +288,7 @@ public class StockService {
             )
             .collect(Collectors.toList());
 
-        log.debug("Found {} symbols that need updates", symbolsToUpdate.size());
+        log.info("Found {} symbols that need updates", symbolsToUpdate.size());
 
         return (int) symbolsToUpdate
             .stream()
@@ -300,7 +300,7 @@ public class StockService {
      * Clean up old stock data
      */
     public int cleanupOldData(int daysToKeep) {
-        log.debug("Cleaning up stock data older than {} days", daysToKeep);
+        log.info("Cleaning up stock data older than {} days", daysToKeep);
 
         LocalDate cutoffDate = LocalDate.now().minusDays(daysToKeep);
         int deletedCount = stockDataRepository.deleteByDataDateBefore(
@@ -316,7 +316,7 @@ public class StockService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getStockDataStatistics() {
-        log.debug("Getting stock data statistics");
+        log.info("Getting stock data statistics");
 
         Object[] stats = stockDataRepository.getStockDataStatistics();
 
@@ -337,7 +337,7 @@ public class StockService {
      */
     @CacheEvict(value = "stockPrices", key = "#symbol")
     public void evictPriceCache(String symbol) {
-        log.debug("Evicted price cache for symbol: {}", symbol);
+        log.info("Evicted price cache for symbol: {}", symbol);
     }
 
     /**
@@ -345,7 +345,7 @@ public class StockService {
      */
     @CacheEvict(value = "stockCharts", key = "#symbol + '_' + #period")
     public void evictChartCache(String symbol, String period) {
-        log.debug(
+        log.info(
             "Evicted chart cache for symbol: {} and period: {}",
             symbol,
             period
@@ -360,7 +360,7 @@ public class StockService {
         allEntries = true
     )
     public void evictAllCaches() {
-        log.debug("Evicted all stock caches");
+        log.info("Evicted all stock caches");
     }
 
     // Private helper methods
@@ -376,7 +376,7 @@ public class StockService {
                 LocalDate.now()
             );
             stockDataRepository.save(stockData);
-            log.debug("Updated stock data for {}: {}", symbol, price);
+            log.info("Updated stock data for {}: {}", symbol, price);
             return 1;
         } catch (Exception e) {
             log.warn("Failed to update stock data for symbol: {}", symbol, e);
@@ -478,7 +478,7 @@ public class StockService {
             .collect(Collectors.toList());
 
         stockDataRepository.saveAll(stockDataList);
-        log.debug(
+        log.info(
             "Stored {} new stock data records for symbol: {}",
             stockDataList.size(),
             symbol

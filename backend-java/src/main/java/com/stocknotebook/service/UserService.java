@@ -39,7 +39,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> findById(UUID id) {
-        log.debug("Finding user by ID: {}", id);
+        log.info("Finding user by ID: {}", id);
         return userRepository.findById(id);
     }
 
@@ -48,7 +48,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<UserInfoDTO> findUserInfoById(UUID id) {
-        log.debug("Finding user info by ID: {}", id);
+        log.info("Finding user info by ID: {}", id);
         return userRepository.findById(id).map(this::mapToUserInfoDTO);
     }
 
@@ -57,7 +57,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        log.debug("Finding user by username: {}", username);
+        log.info("Finding user by username: {}", username);
         return userRepository.findByUsername(username);
     }
 
@@ -66,7 +66,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<UserInfoDTO> findUserInfoByUsername(String username) {
-        log.debug("Finding user info by username: {}", username);
+        log.info("Finding user info by username: {}", username);
         return userRepository
             .findByUsername(username)
             .map(this::mapToUserInfoDTO);
@@ -77,7 +77,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> findByIdWithPurchases(UUID id) {
-        log.debug("Finding user by ID with purchases: {}", id);
+        log.info("Finding user by ID with purchases: {}", id);
         return userRepository.findByIdWithPurchases(id);
     }
 
@@ -85,7 +85,7 @@ public class UserService {
      * Create a new user
      */
     public User createUser(String username, String password) {
-        log.debug("Creating new user with username: {}", username);
+        log.info("Creating new user with username: {}", username);
 
         // Validate input
         if (username == null || username.trim().isEmpty()) {
@@ -137,14 +137,14 @@ public class UserService {
      * Update user's last login timestamp
      */
     public Optional<User> updateLastLogin(UUID userId) {
-        log.debug("Updating last login for user: {}", userId);
+        log.info("Updating last login for user: {}", userId);
 
         return userRepository
             .findById(userId)
             .map(user -> {
                 user.updateLastLogin();
                 User savedUser = userRepository.save(user);
-                log.debug(
+                log.info(
                     "Updated last login for user: {}",
                     savedUser.getUsername()
                 );
@@ -160,7 +160,7 @@ public class UserService {
         String currentPassword,
         String newPassword
     ) {
-        log.debug("Changing password for user: {}", userId);
+        log.info("Changing password for user: {}", userId);
 
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -192,7 +192,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> verifyCredentials(String username, String password) {
-        log.debug("Verifying credentials for username: {}", username);
+        log.info("Verifying credentials for username: {}", username);
 
         if (username == null || password == null) {
             return Optional.empty();
@@ -204,7 +204,7 @@ public class UserService {
                 passwordEncoder.matches(password, user.getPasswordHash())
             )
             .map(user -> {
-                log.debug("Credentials verified for user: {}", username);
+                log.info("Credentials verified for user: {}", username);
                 return user;
             });
     }
@@ -214,7 +214,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<UserInfoDTO> getAllUsersAsDTO() {
-        log.debug("Fetching all users as DTOs");
+        log.info("Fetching all users as DTOs");
 
         return userRepository
             .findAll()
@@ -228,7 +228,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<UserInfoDTO> getUsersWithPurchasesAsDTO() {
-        log.debug("Fetching users with purchases as DTOs");
+        log.info("Fetching users with purchases as DTOs");
 
         return userRepository
             .findUsersWithPurchases()
@@ -242,7 +242,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getUserStatistics(UUID userId) {
-        log.debug("Getting statistics for user: {}", userId);
+        log.info("Getting statistics for user: {}", userId);
 
         if (!userRepository.existsById(userId)) {
             log.warn("User not found for statistics: {}", userId);
@@ -301,7 +301,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<UserInfoDTO> getUsersCreatedAfter(LocalDateTime date) {
-        log.debug("Getting users created after: {}", date);
+        log.info("Getting users created after: {}", date);
 
         return userRepository
             .findUsersCreatedAfter(date)
@@ -314,7 +314,7 @@ public class UserService {
      * Delete a user (admin function)
      */
     public boolean deleteUser(UUID userId) {
-        log.debug("Deleting user: {}", userId);
+        log.info("Deleting user: {}", userId);
 
         if (!userRepository.existsById(userId)) {
             log.warn("User not found for deletion: {}", userId);
@@ -330,7 +330,7 @@ public class UserService {
      * Update user information
      */
     public Optional<UserInfoDTO> updateUser(UUID userId, String newUsername) {
-        log.debug("Updating user: {}", userId);
+        log.info("Updating user: {}", userId);
 
         return userRepository
             .findById(userId)
@@ -365,7 +365,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getUserActivitySummary() {
-        log.debug("Getting user activity summary");
+        log.info("Getting user activity summary");
 
         long totalUsers = userRepository.countUsers();
         List<User> recentUsers = userRepository.findUsersCreatedAfter(
@@ -392,7 +392,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<UserInfoDTO> findUsersByUsernamePattern(String pattern) {
-        log.debug("Finding users by username pattern: {}", pattern);
+        log.info("Finding users by username pattern: {}", pattern);
 
         return userRepository
             .findAll()
@@ -409,7 +409,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getUsersWithStatistics() {
-        log.debug("Getting users with statistics");
+        log.info("Getting users with statistics");
 
         return userRepository
             .findAll()
