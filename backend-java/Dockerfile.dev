@@ -1,18 +1,18 @@
 # Development Dockerfile for Java Spring Boot application with hot reload
 
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
 # Install Maven
-RUN apk add --no-cache maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup -g 1001 -S appuser && \
-    adduser -S appuser -u 1001 -G appuser
+RUN groupadd -g 1001 appuser && \
+    useradd -u 1001 -g appuser -m -s /bin/bash appuser
 
 # Install curl for health checks
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy pom.xml and download dependencies for better caching
 COPY pom.xml .

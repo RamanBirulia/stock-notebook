@@ -2,6 +2,8 @@
 
 This guide provides standards and best practices for contributing to the Stock Notebook Java backend.
 
+RUN AND BUILD BACKEND ONLY IN DOCKER CONTAINER
+
 ## Code Style and Standards
 
 ### Java Conventions
@@ -27,6 +29,11 @@ private BigDecimal totalValue;
 
 // Constants
 public static final String CACHE_NAME_STOCK_PRICES = "stock-prices";
+
+// DTOs (Data Transfer Objects) - Use Java Records
+public record LoginRequestDTO(String username, String password) { }
+public record RegisterRequestDTO(String username, String password, String email) { }
+public record StockDetailsResponseDTO(String symbol, BigDecimal price, LocalDateTime lastUpdated) { }
 ```
 
 ### Package Structure
@@ -36,9 +43,14 @@ com.stocknotebook.{layer}.{domain}
 ├── service.stock        # StockService, StockDataService
 ├── repository.user      # UserRepository
 ├── entity.portfolio     # Purchase, StockData
-├── dto.request.auth     # LoginRequest, RegisterRequest
-└── dto.response.stock   # StockDetailsResponse
+├── dto.request.auth     # LoginRequestDTO, RegisterRequestDTO
+└── dto.response.stock   # StockDetailsResponseDTO
 ```
+
+**DTO Naming Convention:**
+- All classes in the `dto` package (request and response) MUST end with the `DTO` suffix
+- This clearly identifies Data Transfer Objects and distinguishes them from entities
+- Examples: `LoginRequestDTO`, `CreatePurchaseRequestDTO`, `UserResponseDTO`
 
 ## Architecture Guidelines
 
@@ -47,6 +59,13 @@ com.stocknotebook.{layer}.{domain}
 2. **Service Layer**: Business logic, transaction management, orchestration
 3. **Repository Layer**: Data access, database operations
 4. **Entity Layer**: JPA entities, database mapping
+
+### Architectural Rules
+- **Use Java Records**: Prefer Java records for DTOs and immutable data classes
+- **Stream API**: Use Java Stream API for collection operations where applicable
+- **No Business Logic in Controllers**: Controllers should only handle HTTP concerns
+- **No Entities in Controllers**: Controllers should only work with DTOs, never entities
+- **Service Layer Responsibilities**: All business logic must be in the service layer
 
 ### Dependency Injection
 ```java
@@ -63,7 +82,7 @@ public class StockService {
 ```java
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -80,17 +99,17 @@ public class GlobalExceptionHandler {
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false, unique = true)
     private String username;
-    
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-    
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Purchase> purchases = new ArrayList<>();
 }
@@ -103,35 +122,45 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-    
+
     @Transactional(readOnly = true)
-    public Optional<User> findById(Long id) {
+    public Optional<UserDTO> findById(Long id) {
         log.debug("Finding user by id: {}", id);
-        return userRepository.findById(id);
+        return userRepository.findById(id)
+            .map(this::mapToDTO);
     }
-    
-    public User createUser(RegisterRequest request) {
-        log.info("Creating new user: {}", request.getUsername());
-        
-        if (userRepository.existsByUsername(request.getUsername())) {
+
+    public UserDTO createUser(RegisterRequestDTO request) {
+        log.info("Creating new user: {}", request.username());
+
+        if (userRepository.existsByUsername(request.username())) {
             throw new UserAlreadyExistsException("Username already exists");
         }
-        
+
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-            
-        return userRepository.save(user);
+        user.setUsername(request.username());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+
+        User savedUser = userRepository.save(user);
+        return mapToDTO(savedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDTO> findActiveUsers() {
+        return userRepository.findByActiveTrue()
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
+    }
+
+    private UserDTO mapToDTO(User user) {
+        return new UserDTO(user.getId(), user.getUsername(), user.getCreatedAt());
     }
 }
 ```
@@ -141,32 +170,26 @@ public class UserService {
 @RestController
 @RequestMapping("/api/auth")
 @Validated
+@RequiredArgsConstructor
 public class AuthController {
-    
+
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserMapper userMapper;
-    
-    public AuthController(UserService userService, 
-                         JwtTokenProvider jwtTokenProvider,
-                         UserMapper userMapper) {
-        this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userMapper = userMapper;
-    }
-    
+    private final AuthService authService;
+
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
-        
-        User user = userService.createUser(request);
-        String token = jwtTokenProvider.generateToken(user);
-        
-        AuthResponse response = new AuthResponse();
-        response.setToken(token);
-        response.setUser(userMapper.toUserInfo(user));
-            
+    public ResponseEntity<AuthResponseDTO> register(
+            @Valid @RequestBody RegisterRequestDTO request) {
+
+        AuthResponseDTO response = authService.registerUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO request) {
+
+        AuthResponseDTO response = authService.authenticateUser(request);
+        return ResponseEntity.ok(response);
     }
 }
 ```
@@ -175,11 +198,11 @@ public class AuthController {
 ```java
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
+
     Optional<User> findByUsername(String username);
-    
+
     boolean existsByUsername(String username);
-    
+
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.purchases WHERE u.id = :id")
     Optional<User> findByIdWithPurchases(@Param("id") Long id);
 }
@@ -191,29 +214,29 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ```java
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    
+
     @Mock
     private UserRepository userRepository;
-    
+
     @Mock
     private PasswordEncoder passwordEncoder;
-    
+
     @InjectMocks
     private UserService userService;
-    
+
     @Test
     void createUser_WhenValidRequest_ShouldReturnUser() {
         // Given
         RegisterRequest request = new RegisterRequest();
         request.setUsername("testuser");
         request.setPassword("password123");
-            
+
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashedPassword");
-        
+
         // When
         User result = userService.createUser(request);
-        
+
         // Then
         assertThat(result.getUsername()).isEqualTo("testuser");
         assertThat(result.getPasswordHash()).isEqualTo("hashedPassword");
@@ -228,20 +251,20 @@ class UserServiceTest {
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserControllerIntegrationTest {
-    
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
         .withDatabaseName("testdb")
         .withUsername("test")
         .withPassword("test");
-    
+
     @Test
     void register_WhenValidRequest_ShouldCreateUser() {
         RegisterRequest request = new RegisterRequest("testuser", "password123");
-        
+
         ResponseEntity<AuthResponse> response = restTemplate.postForEntity(
             "/api/auth/register", request, AuthResponse.class);
-        
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody().getUser().getUsername()).isEqualTo("testuser");
     }
@@ -255,19 +278,19 @@ class UserControllerIntegrationTest {
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                  HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                  HttpServletResponse response,
                                   FilterChain filterChain) throws ServletException, IOException {
-        
+
         String token = extractToken(request);
-        
+
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }
@@ -275,46 +298,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 ### Input Validation
 ```java
-public class CreatePurchaseRequest {
-    
+public record CreatePurchaseRequestDTO(
     @NotBlank(message = "Symbol is required")
     @Size(min = 1, max = 10, message = "Symbol must be between 1 and 10 characters")
-    private String symbol;
-    
+    String symbol,
+
     @NotNull(message = "Quantity is required")
     @Positive(message = "Quantity must be positive")
-    private Integer quantity;
-    
+    Integer quantity,
+
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.01", message = "Price must be greater than 0")
-    private BigDecimal pricePerShare;
-    
+    BigDecimal pricePerShare,
+
     @PastOrPresent(message = "Purchase date cannot be in the future")
-    private LocalDate purchaseDate;
-    
-    // Constructors
-    public CreatePurchaseRequest() {}
-    
-    public CreatePurchaseRequest(String symbol, Integer quantity, 
-                               BigDecimal pricePerShare, LocalDate purchaseDate) {
-        this.symbol = symbol;
-        this.quantity = quantity;
-        this.pricePerShare = pricePerShare;
-        this.purchaseDate = purchaseDate;
+    LocalDate purchaseDate,
+
+    @DecimalMin(value = "0.00", message = "Commission cannot be negative")
+    BigDecimal commission
+) {
+    public CreatePurchaseRequestDTO {
+        // Compact constructor for validation
+        if (commission == null) {
+            commission = BigDecimal.ZERO;
+        }
     }
-    
-    // Getters and Setters
-    public String getSymbol() { return symbol; }
-    public void setSymbol(String symbol) { this.symbol = symbol; }
-    
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    
-    public BigDecimal getPricePerShare() { return pricePerShare; }
-    public void setPricePerShare(BigDecimal pricePerShare) { this.pricePerShare = pricePerShare; }
-    
-    public LocalDate getPurchaseDate() { return purchaseDate; }
-    public void setPurchaseDate(LocalDate purchaseDate) { this.purchaseDate = purchaseDate; }
 }
 ```
 
@@ -326,23 +334,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@RequiredArgsConstructor
 public class StockService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(StockService.class);
     private final YahooFinanceClient yahooFinanceClient;
-    
-    public StockService(YahooFinanceClient yahooFinanceClient) {
-        this.yahooFinanceClient = yahooFinanceClient;
-    }
-    
+    private final StockDataRepository stockDataRepository;
+
     @Cacheable(value = "stock-prices", key = "#symbol")
-    public BigDecimal getCurrentPrice(String symbol) {
-        return yahooFinanceClient.fetchCurrentPrice(symbol);
+    public StockPriceDTO getCurrentPrice(String symbol) {
+        log.debug("Fetching current price for symbol: {}", symbol);
+        BigDecimal price = yahooFinanceClient.getPrice(symbol);
+        return new StockPriceDTO(symbol, price, LocalDateTime.now());
     }
-    
+
     @CacheEvict(value = "stock-prices", key = "#symbol")
     public void evictPriceCache(String symbol) {
-        log.info("Evicting price cache for symbol: {}", symbol);
+        log.debug("Evicting cache for symbol: {}", symbol);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StockPriceDTO> getMultiplePrices(List<String> symbols) {
+        return symbols.stream()
+            .map(this::getCurrentPrice)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, BigDecimal> getPortfolioValues(List<String> symbols) {
+        return symbols.stream()
+            .collect(Collectors.toMap(
+                symbol -> symbol,
+                symbol -> getCurrentPrice(symbol).price()
+            ));
     }
 }
 ```
@@ -355,9 +379,9 @@ public class StockService {
     @Index(name = "idx_created_at", columnList = "created_at")
 })
 public class StockData {
-    
+
     @Query("SELECT s FROM StockData s WHERE s.symbol = :symbol AND s.dataDate >= :startDate")
-    List<StockData> findBySymbolAndDateRange(@Param("symbol") String symbol, 
+    List<StockData> findBySymbolAndDateRange(@Param("symbol") String symbol,
                                            @Param("startDate") LocalDate startDate);
 }
 ```
@@ -388,7 +412,7 @@ Brief description of changes
 
 ## Type of Change
 - [ ] Bug fix
-- [ ] New feature  
+- [ ] New feature
 - [ ] Documentation update
 - [ ] Code refactoring
 
@@ -430,7 +454,7 @@ User user = userRepository.findById(id)
 ```java
 /**
  * Calculates the current portfolio value for a user.
- * 
+ *
  * @param userId the ID of the user
  * @param includeCommissions whether to include commission costs
  * @return the total portfolio value
@@ -444,7 +468,7 @@ public BigDecimal calculatePortfolioValue(Long userId, boolean includeCommission
 
 ### API Documentation
 ```java
-@Operation(summary = "Get user portfolio dashboard", 
+@Operation(summary = "Get user portfolio dashboard",
           description = "Returns portfolio summary including total value, P&L, and holdings")
 @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Success"),
@@ -465,65 +489,38 @@ public ResponseEntity<DashboardResponse> getDashboard(Authentication auth) {
 ```java
 @Entity
 @Table(name = "purchases")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class Purchase extends BaseEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
     private String symbol;
-    
+
     @Column(nullable = false)
     private Integer quantity;
-    
+
     @Column(name = "price_per_share", nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerShare;
-    
+
     @Column(precision = 10, scale = 2)
     private BigDecimal commission = BigDecimal.ZERO;
-    
+
     @Column(name = "purchase_date", nullable = false)
     private LocalDate purchaseDate;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    
-    // Constructors
-    public Purchase() {}
-    
-    public Purchase(String symbol, Integer quantity, BigDecimal pricePerShare, 
-                   BigDecimal commission, LocalDate purchaseDate, User user) {
-        this.symbol = symbol;
-        this.quantity = quantity;
-        this.pricePerShare = pricePerShare;
-        this.commission = commission;
-        this.purchaseDate = purchaseDate;
-        this.user = user;
+
+    public BigDecimal getTotalCost() {
+        return pricePerShare.multiply(BigDecimal.valueOf(quantity)).add(commission);
     }
-    
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
-    public String getSymbol() { return symbol; }
-    public void setSymbol(String symbol) { this.symbol = symbol; }
-    
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    
-    public BigDecimal getPricePerShare() { return pricePerShare; }
-    public void setPricePerShare(BigDecimal pricePerShare) { this.pricePerShare = pricePerShare; }
-    
-    public BigDecimal getCommission() { return commission; }
-    public void setCommission(BigDecimal commission) { this.commission = commission; }
-    
-    public LocalDate getPurchaseDate() { return purchaseDate; }
-    public void setPurchaseDate(LocalDate purchaseDate) { this.purchaseDate = purchaseDate; }
-    
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
 }
 ```
 
@@ -531,12 +528,20 @@ public class Purchase extends BaseEntity {
 ```java
 @Repository
 public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
-    
+
     List<Purchase> findByUserIdOrderByPurchaseDateDesc(Long userId);
-    
+
     @Query("SELECT p FROM Purchase p WHERE p.user.id = :userId AND p.symbol = :symbol")
-    List<Purchase> findByUserIdAndSymbol(@Param("userId") Long userId, 
+    List<Purchase> findByUserIdAndSymbol(@Param("userId") Long userId,
                                         @Param("symbol") String symbol);
+
+    @Query("SELECT DISTINCT p.symbol FROM Purchase p WHERE p.user.id = :userId")
+    List<String> findDistinctSymbolsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT p FROM Purchase p WHERE p.user.id = :userId AND p.purchaseDate BETWEEN :startDate AND :endDate")
+    List<Purchase> findByUserIdAndDateRange(@Param("userId") Long userId,
+                                           @Param("startDate") LocalDate startDate,
+                                           @Param("endDate") LocalDate endDate);
 }
 ```
 
@@ -547,86 +552,197 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PurchaseService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(PurchaseService.class);
     private final PurchaseRepository purchaseRepository;
-    private final UserService userService;
-    private final PurchaseMapper purchaseMapper;
-    
-    public PurchaseService(PurchaseRepository purchaseRepository,
-                          UserService userService,
-                          PurchaseMapper purchaseMapper) {
-        this.purchaseRepository = purchaseRepository;
-        this.userService = userService;
-        this.purchaseMapper = purchaseMapper;
-    }
-    
-    public Purchase createPurchase(Long userId, CreatePurchaseRequest request) {
-        log.info("Creating purchase for user {} and symbol {}", userId, request.getSymbol());
-        
-        User user = userService.findById(userId)
+    private final UserRepository userRepository;
+    private final StockService stockService;
+
+    public PurchaseResponseDTO createPurchase(Long userId, CreatePurchaseRequestDTO request) {
+        log.info("Creating purchase for user {} and symbol {}", userId, request.symbol());
+
+        User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException("User not found"));
-        
+
         Purchase purchase = new Purchase();
-        purchase.setSymbol(request.getSymbol().toUpperCase());
-        purchase.setQuantity(request.getQuantity());
-        purchase.setPricePerShare(request.getPricePerShare());
-        purchase.setCommission(request.getCommission());
-        purchase.setPurchaseDate(request.getPurchaseDate());
+        purchase.setSymbol(request.symbol().toUpperCase());
+        purchase.setQuantity(request.quantity());
+        purchase.setPricePerShare(request.pricePerShare());
+        purchase.setCommission(request.commission());
+        purchase.setPurchaseDate(request.purchaseDate());
         purchase.setUser(user);
-            
-        return purchaseRepository.save(purchase);
+
+        Purchase savedPurchase = purchaseRepository.save(purchase);
+        return mapToDTO(savedPurchase);
     }
-    
+
     @Transactional(readOnly = true)
-    public List<Purchase> getUserPurchases(Long userId) {
-        return purchaseRepository.findByUserIdOrderByPurchaseDateDesc(userId);
+    public List<PurchaseResponseDTO> getUserPurchases(Long userId) {
+        return purchaseRepository.findByUserIdOrderByPurchaseDateDesc(userId)
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PortfolioSummaryDTO getPortfolioSummary(Long userId) {
+        List<Purchase> purchases = purchaseRepository.findByUserIdOrderByPurchaseDateDesc(userId);
+
+        Map<String, List<Purchase>> groupedBySymbol = purchases.stream()
+            .collect(Collectors.groupingBy(Purchase::getSymbol));
+
+        List<PortfolioPositionDTO> positions = groupedBySymbol.entrySet().stream()
+            .map(entry -> calculatePosition(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
+        BigDecimal totalValue = positions.stream()
+            .map(PortfolioPositionDTO::currentValue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new PortfolioSummaryDTO(positions, totalValue);
+    }
+
+    private PortfolioPositionDTO calculatePosition(String symbol, List<Purchase> purchases) {
+        Integer totalQuantity = purchases.stream()
+            .mapToInt(Purchase::getQuantity)
+            .sum();
+
+        BigDecimal totalCost = purchases.stream()
+            .map(Purchase::getTotalCost)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal averagePrice = totalCost.divide(BigDecimal.valueOf(totalQuantity),
+            RoundingMode.HALF_UP);
+
+        StockPriceDTO currentPrice = stockService.getCurrentPrice(symbol);
+        BigDecimal currentValue = currentPrice.price().multiply(BigDecimal.valueOf(totalQuantity));
+
+        return new PortfolioPositionDTO(symbol, totalQuantity, averagePrice,
+            currentPrice.price(), currentValue);
+    }
+
+    private PurchaseResponseDTO mapToDTO(Purchase purchase) {
+        return new PurchaseResponseDTO(
+            purchase.getId(),
+            purchase.getSymbol(),
+            purchase.getQuantity(),
+            purchase.getPricePerShare(),
+            purchase.getCommission(),
+            purchase.getPurchaseDate()
+        );
     }
 }
 ```
+
+
 
 4. **Controller**
 ```java
 @RestController
 @RequestMapping("/api/purchases")
 @Validated
+@RequiredArgsConstructor
 public class PurchaseController {
-    
+
     private final PurchaseService purchaseService;
-    private final PurchaseMapper purchaseMapper;
-    
-    public PurchaseController(PurchaseService purchaseService,
-                             PurchaseMapper purchaseMapper) {
-        this.purchaseService = purchaseService;
-        this.purchaseMapper = purchaseMapper;
-    }
-    
+
     @PostMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<PurchaseResponse> createPurchase(
-            @Valid @RequestBody CreatePurchaseRequest request,
+    public ResponseEntity<PurchaseResponseDTO> createPurchase(
+            @Valid @RequestBody CreatePurchaseRequestDTO request,
             Authentication authentication) {
-        
+
         Long userId = getUserId(authentication);
-        Purchase purchase = purchaseService.createPurchase(userId, request);
-        PurchaseResponse response = purchaseMapper.toResponse(purchase);
-        
+        PurchaseResponseDTO response = purchaseService.createPurchase(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
+
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<PurchaseResponse>> getUserPurchases(
+    public ResponseEntity<List<PurchaseResponseDTO>> getUserPurchases(
             Authentication authentication) {
-        
+
         Long userId = getUserId(authentication);
-        List<Purchase> purchases = purchaseService.getUserPurchases(userId);
-        List<PurchaseResponse> response = purchaseMapper.toResponseList(purchases);
-        
-        return ResponseEntity.ok(response);
+        List<PurchaseResponseDTO> purchases = purchaseService.getUserPurchases(userId);
+        return ResponseEntity.ok(purchases);
+    }
+
+    @GetMapping("/portfolio")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(
+            Authentication authentication) {
+
+        Long userId = getUserId(authentication);
+        PortfolioSummaryDTO summary = purchaseService.getPortfolioSummary(userId);
+        return ResponseEntity.ok(summary);
+    }
+
+    private Long getUserId(Authentication authentication) {
+        return ((UserPrincipal) authentication.getPrincipal()).getId();
     }
 }
 ```
+
+5. **DTOs (Using Records)**
+```java
+// Request DTOs
+public record CreatePurchaseRequestDTO(
+    String symbol,
+    Integer quantity,
+    BigDecimal pricePerShare,
+    BigDecimal commission,
+    LocalDate purchaseDate
+) {}
+
+// Response DTOs
+public record PurchaseResponseDTO(
+    Long id,
+    String symbol,
+    Integer quantity,
+    BigDecimal pricePerShare,
+    BigDecimal commission,
+    LocalDate purchaseDate
+) {}
+
+public record PortfolioPositionDTO(
+    String symbol,
+    Integer quantity,
+    BigDecimal averagePrice,
+    BigDecimal currentPrice,
+    BigDecimal currentValue
+) {}
+
+public record PortfolioSummaryDTO(
+    List<PortfolioPositionDTO> positions,
+    BigDecimal totalValue
+) {}
+
+public record StockPriceDTO(
+    String symbol,
+    BigDecimal price,
+    LocalDateTime timestamp
+) {}
+
+public record UserDTO(
+    Long id,
+    String username,
+    LocalDateTime createdAt
+) {}
+
+public record AuthResponseDTO(
+    String token,
+    UserDTO user
+) {}
+```
+
+## Key Benefits of This Approach
+
+1. **Type Safety**: Records provide compile-time safety and immutability
+2. **Reduced Boilerplate**: Less code to write and maintain
+3. **Clear Separation**: Controllers only handle HTTP, services handle business logic
+4. **Stream Processing**: Efficient and readable collection operations
+5. **Testability**: Each layer can be tested independently
 
 This guide ensures consistent, maintainable, and high-quality code contributions to the Stock Notebook backend.

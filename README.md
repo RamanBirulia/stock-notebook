@@ -37,7 +37,7 @@ git clone <your-repo-url>
 cd stock-notebook
 
 # Quick setup with Docker
-docker compose up -d
+docker compose -f docker-compose.development.yml up -d
 
 # Or use the automated setup script
 ./scripts/dev-setup.sh
@@ -91,10 +91,10 @@ nano .env  # Update with your production values
    ```bash
    # Connect to your droplet
    ssh root@YOUR_DROPLET_IP
-   
+
    # Update system
    apt update && apt upgrade -y
-   
+
    # Install Docker
    curl -fsSL https://get.docker.com -o get-docker.sh
    sh get-docker.sh
@@ -105,10 +105,10 @@ nano .env  # Update with your production values
    # Create deployment directory
    mkdir -p /opt/stock-notebook
    cd /opt/stock-notebook
-   
+
    # Copy your application files
    # (Use scp, git clone, or the deployment script)
-   
+
    # Create production environment file
    cp .env.production .env
    nano .env  # Update with your values
@@ -118,7 +118,7 @@ nano .env  # Update with your production values
    ```bash
    # Start with production configuration
    docker compose -f docker-compose.prod.yml up -d
-   
+
    # Check status
    docker compose -f docker-compose.prod.yml ps
    ```
@@ -335,9 +335,9 @@ openssl x509 -in /path/to/cert.pem -text -noout
 #### Database Optimization
 ```sql
 -- Check slow queries
-SELECT query, mean_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_time DESC 
+SELECT query, mean_time, calls
+FROM pg_stat_statements
+ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Analyze table statistics
