@@ -98,11 +98,21 @@ public class User extends BaseEntity {
 
 ### Service Layer
 ```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @Transactional
-@RequiredArgsConstructor
-@Slf4j
 public class UserService {
+    
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     
     @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
@@ -117,10 +127,9 @@ public class UserService {
             throw new UserAlreadyExistsException("Username already exists");
         }
         
-        User user = User.builder()
-            .username(request.getUsername())
-            .passwordHash(passwordEncoder.encode(request.getPassword()))
-            .build();
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             
         return userRepository.save(user);
     }
@@ -131,9 +140,20 @@ public class UserService {
 ```java
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 @Validated
 public class AuthController {
+    
+    private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserMapper userMapper;
+    
+    public AuthController(UserService userService, 
+                         JwtTokenProvider jwtTokenProvider,
+                         UserMapper userMapper) {
+        this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userMapper = userMapper;
+    }
     
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
@@ -142,10 +162,9 @@ public class AuthController {
         User user = userService.createUser(request);
         String token = jwtTokenProvider.generateToken(user);
         
-        AuthResponse response = AuthResponse.builder()
-            .token(token)
-            .user(userMapper.toUserInfo(user))
-            .build();
+        AuthResponse response = new AuthResponse();
+        response.setToken(token);
+        response.setUser(userMapper.toUserInfo(user));
             
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -185,10 +204,9 @@ class UserServiceTest {
     @Test
     void createUser_WhenValidRequest_ShouldReturnUser() {
         // Given
-        RegisterRequest request = RegisterRequest.builder()
-            .username("testuser")
-            .password("password123")
-            .build();
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("testuser");
+        request.setPassword("password123");
             
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashedPassword");
@@ -257,8 +275,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 ### Input Validation
 ```java
-@Data
-@Builder
 public class CreatePurchaseRequest {
     
     @NotBlank(message = "Symbol is required")
@@ -275,16 +291,49 @@ public class CreatePurchaseRequest {
     
     @PastOrPresent(message = "Purchase date cannot be in the future")
     private LocalDate purchaseDate;
+    
+    // Constructors
+    public CreatePurchaseRequest() {}
+    
+    public CreatePurchaseRequest(String symbol, Integer quantity, 
+                               BigDecimal pricePerShare, LocalDate purchaseDate) {
+        this.symbol = symbol;
+        this.quantity = quantity;
+        this.pricePerShare = pricePerShare;
+        this.purchaseDate = purchaseDate;
+    }
+    
+    // Getters and Setters
+    public String getSymbol() { return symbol; }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
+    
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    
+    public BigDecimal getPricePerShare() { return pricePerShare; }
+    public void setPricePerShare(BigDecimal pricePerShare) { this.pricePerShare = pricePerShare; }
+    
+    public LocalDate getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(LocalDate purchaseDate) { this.purchaseDate = purchaseDate; }
 }
 ```
 
-## Performance Guidelines
+### Performance Guidelines
 
 ### Caching Strategy
 ```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
-@RequiredArgsConstructor
 public class StockService {
+    
+    private static final Logger log = LoggerFactory.getLogger(StockService.class);
+    private final YahooFinanceClient yahooFinanceClient;
+    
+    public StockService(YahooFinanceClient yahooFinanceClient) {
+        this.yahooFinanceClient = yahooFinanceClient;
+    }
     
     @Cacheable(value = "stock-prices", key = "#symbol")
     public BigDecimal getCurrentPrice(String symbol) {
@@ -416,10 +465,6 @@ public ResponseEntity<DashboardResponse> getDashboard(Authentication auth) {
 ```java
 @Entity
 @Table(name = "purchases")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Purchase extends BaseEntity {
     
     @Id
@@ -444,6 +489,41 @@ public class Purchase extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    
+    // Constructors
+    public Purchase() {}
+    
+    public Purchase(String symbol, Integer quantity, BigDecimal pricePerShare, 
+                   BigDecimal commission, LocalDate purchaseDate, User user) {
+        this.symbol = symbol;
+        this.quantity = quantity;
+        this.pricePerShare = pricePerShare;
+        this.commission = commission;
+        this.purchaseDate = purchaseDate;
+        this.user = user;
+    }
+    
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getSymbol() { return symbol; }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
+    
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    
+    public BigDecimal getPricePerShare() { return pricePerShare; }
+    public void setPricePerShare(BigDecimal pricePerShare) { this.pricePerShare = pricePerShare; }
+    
+    public BigDecimal getCommission() { return commission; }
+    public void setCommission(BigDecimal commission) { this.commission = commission; }
+    
+    public LocalDate getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(LocalDate purchaseDate) { this.purchaseDate = purchaseDate; }
+    
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }
 ```
 
@@ -462,15 +542,25 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
 3. **Service**
 ```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @Transactional
-@RequiredArgsConstructor
-@Slf4j
 public class PurchaseService {
     
+    private static final Logger log = LoggerFactory.getLogger(PurchaseService.class);
     private final PurchaseRepository purchaseRepository;
     private final UserService userService;
     private final PurchaseMapper purchaseMapper;
+    
+    public PurchaseService(PurchaseRepository purchaseRepository,
+                          UserService userService,
+                          PurchaseMapper purchaseMapper) {
+        this.purchaseRepository = purchaseRepository;
+        this.userService = userService;
+        this.purchaseMapper = purchaseMapper;
+    }
     
     public Purchase createPurchase(Long userId, CreatePurchaseRequest request) {
         log.info("Creating purchase for user {} and symbol {}", userId, request.getSymbol());
@@ -478,14 +568,13 @@ public class PurchaseService {
         User user = userService.findById(userId)
             .orElseThrow(() -> new UserNotFoundException("User not found"));
         
-        Purchase purchase = Purchase.builder()
-            .symbol(request.getSymbol().toUpperCase())
-            .quantity(request.getQuantity())
-            .pricePerShare(request.getPricePerShare())
-            .commission(request.getCommission())
-            .purchaseDate(request.getPurchaseDate())
-            .user(user)
-            .build();
+        Purchase purchase = new Purchase();
+        purchase.setSymbol(request.getSymbol().toUpperCase());
+        purchase.setQuantity(request.getQuantity());
+        purchase.setPricePerShare(request.getPricePerShare());
+        purchase.setCommission(request.getCommission());
+        purchase.setPurchaseDate(request.getPurchaseDate());
+        purchase.setUser(user);
             
         return purchaseRepository.save(purchase);
     }
@@ -501,12 +590,17 @@ public class PurchaseService {
 ```java
 @RestController
 @RequestMapping("/api/purchases")
-@RequiredArgsConstructor
 @Validated
 public class PurchaseController {
     
     private final PurchaseService purchaseService;
     private final PurchaseMapper purchaseMapper;
+    
+    public PurchaseController(PurchaseService purchaseService,
+                             PurchaseMapper purchaseMapper) {
+        this.purchaseService = purchaseService;
+        this.purchaseMapper = purchaseMapper;
+    }
     
     @PostMapping
     @PreAuthorize("hasRole('USER')")

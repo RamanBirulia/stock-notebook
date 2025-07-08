@@ -49,10 +49,10 @@ backend-java/
 │   │   │   │   │   └── StockDetailsResponse.java
 │   │   │   │   └── external/                     # External API DTOs
 │   │   │   │       └── yahoo/                    # Yahoo Finance DTOs
-│   │   │   ├── mapper/                           # Object mappers
-│   │   │   │   ├── UserMapper.java               # User entity/DTO mapping
-│   │   │   │   ├── PurchaseMapper.java           # Purchase entity/DTO mapping
-│   │   │   │   └── StockMapper.java              # Stock entity/DTO mapping
+│   │   │   ├── mapper/                           # Manual object mappers
+│   │   │   │   ├── UserMapper.java               # User entity/DTO mapping utility
+│   │   │   │   ├── PurchaseMapper.java           # Purchase entity/DTO mapping utility
+│   │   │   │   └── StockMapper.java              # Stock entity/DTO mapping utility
 │   │   │   ├── exception/                        # Exception handling
 │   │   │   │   ├── GlobalExceptionHandler.java   # Global exception handler
 │   │   │   │   └── custom/                       # Custom exceptions
@@ -107,6 +107,7 @@ backend-java/
 - **Factory Pattern**: Object creation
 - **Strategy Pattern**: Authentication strategies
 - **Observer Pattern**: Event handling
+- **Manual Mapping**: Standard Java object mapping without external libraries
 
 ## Key Components
 
@@ -160,15 +161,17 @@ backend-java/
 
 ## Monitoring and Observability
 
-### Spring Actuator
+### Spring Boot Actuator
 - Health checks
 - Metrics collection
 - Cache statistics
+- Application information
 
 ### Logging
-- Structured logging with SLF4J
+- Standard Java logging with SLF4J
 - Configurable log levels
 - Request/response logging
+- No external annotation processors
 
 ## Performance Considerations
 

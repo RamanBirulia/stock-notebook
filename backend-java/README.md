@@ -21,6 +21,7 @@ Spring Boot 3 backend service for stock portfolio tracking with real-time data f
 - **Caffeine** for caching
 - **Maven** for build management
 - **Docker** for containerization
+- **Standard Java** without external annotation processors
 
 ## Quick Start
 
@@ -138,6 +139,12 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed architecture docum
 
 ### Contributing
 See [HOW_TO_CONTRIBUTE.md](HOW_TO_CONTRIBUTE.md) for development guidelines.
+
+### Code Style
+- Uses standard Java without Lombok or MapStruct
+- Manual getters/setters and constructors
+- Standard SLF4J logging
+- Clean, readable code following Java conventions
 
 ### Database Migrations
 ```bash
