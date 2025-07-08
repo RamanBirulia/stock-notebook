@@ -6,7 +6,7 @@ use axum::{
     middleware::{self, Next},
     response::Json,
     routing::{get, post},
-    Router,
+    Extension, Router,
 };
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
@@ -282,20 +282,24 @@ async fn register(
 
 async fn create_purchase(
     State(app_state): State<AppState>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreatePurchaseRequest>,
 ) -> Result<Json<Purchase>, AppError> {
     let purchase_id = uuid::Uuid::new_v4();
+    let user_id = uuid::Uuid::parse_str(&claims.user_id)
+        .map_err(|_| AppError::Internal("Invalid user ID".to_string()))?;
     let purchase_date = chrono::NaiveDate::parse_from_str(&payload.purchase_date, "%Y-%m-%d")
         .map_err(|_| AppError::Internal("Invalid date format".to_string()))?;
 
     let row = sqlx::query!(
-        "INSERT INTO purchases (id, symbol, quantity, price_per_share, commission, purchase_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, symbol, quantity, price_per_share, commission, purchase_date",
+        "INSERT INTO purchases (id, symbol, quantity, price_per_share, commission, purchase_date, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, symbol, quantity, price_per_share, commission, purchase_date",
         purchase_id,
         payload.symbol,
         payload.quantity as i32,
         payload.price_per_share,
         payload.commission,
-        purchase_date
+        purchase_date,
+        user_id
     )
     .fetch_one(&app_state.db)
     .await?;
@@ -310,9 +314,16 @@ async fn create_purchase(
     }))
 }
 
-async fn get_purchases(State(app_state): State<AppState>) -> Result<Json<Vec<Purchase>>, AppError> {
+async fn get_purchases(
+    State(app_state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<Purchase>>, AppError> {
+    let user_id = uuid::Uuid::parse_str(&claims.user_id)
+        .map_err(|_| AppError::Internal("Invalid user ID".to_string()))?;
+
     let rows = sqlx::query!(
-        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases ORDER BY purchase_date DESC"
+        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE user_id = $1 ORDER BY purchase_date DESC",
+        user_id
     )
     .fetch_all(&app_state.db)
     .await?;
@@ -332,9 +343,16 @@ async fn get_purchases(State(app_state): State<AppState>) -> Result<Json<Vec<Pur
     Ok(Json(purchases))
 }
 
-async fn get_dashboard(State(app_state): State<AppState>) -> Result<Json<DashboardData>, AppError> {
+async fn get_dashboard(
+    State(app_state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<DashboardData>, AppError> {
+    let user_id = uuid::Uuid::parse_str(&claims.user_id)
+        .map_err(|_| AppError::Internal("Invalid user ID".to_string()))?;
+
     let purchases = sqlx::query!(
-        "SELECT symbol, SUM(quantity) as total_quantity, AVG(price_per_share) as avg_price, SUM(quantity * price_per_share + commission) as total_spent FROM purchases GROUP BY symbol"
+        "SELECT symbol, SUM(quantity) as total_quantity, AVG(price_per_share) as avg_price, SUM(quantity * price_per_share + commission) as total_spent FROM purchases WHERE user_id = $1 GROUP BY symbol",
+        user_id
     )
     .fetch_all(&app_state.db)
     .await?;
@@ -387,10 +405,15 @@ async fn get_dashboard(State(app_state): State<AppState>) -> Result<Json<Dashboa
 async fn get_stock_details(
     State(app_state): State<AppState>,
     Path(symbol): Path<String>,
+    Extension(claims): Extension<Claims>,
 ) -> Result<Json<StockDetails>, AppError> {
+    let user_id = uuid::Uuid::parse_str(&claims.user_id)
+        .map_err(|_| AppError::Internal("Invalid user ID".to_string()))?;
+
     let rows = sqlx::query!(
-        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE symbol = $1 ORDER BY purchase_date DESC",
-        symbol
+        "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases WHERE symbol = $1 AND user_id = $2 ORDER BY purchase_date DESC",
+        symbol,
+        user_id
     )
     .fetch_all(&app_state.db)
     .await?;
@@ -446,8 +469,11 @@ async fn get_stock_chart(
     State(app_state): State<AppState>,
     Path(symbol): Path<String>,
     Query(query): Query<ChartQuery>,
+    Extension(claims): Extension<Claims>,
 ) -> Result<Json<ChartData>, AppError> {
     let period = query.period.unwrap_or_else(|| "1M".to_string());
+    let user_id = uuid::Uuid::parse_str(&claims.user_id)
+        .map_err(|_| AppError::Internal("Invalid user ID".to_string()))?;
 
     let price_data = app_state
         .stock_client
@@ -458,8 +484,9 @@ async fn get_stock_chart(
         })?;
 
     let purchase_dates = sqlx::query!(
-        "SELECT purchase_date, price_per_share FROM purchases WHERE symbol = $1",
-        symbol
+        "SELECT purchase_date, price_per_share FROM purchases WHERE symbol = $1 AND user_id = $2",
+        symbol,
+        user_id
     )
     .fetch_all(&app_state.db)
     .await?;

@@ -8,9 +8,9 @@ default-run = "stock-tracker-backend"
 name = "stock-tracker-backend"
 path = "src/main.rs"
 
-[[bin]]
-name = "seeder"
-path = "src/bin/seeder.rs"
+# [[bin]]
+# name = "seeder"
+# path = "src/bin/seeder.rs"
 
 [lib]
 name = "stock_tracker_backend"

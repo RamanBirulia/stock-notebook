@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, symbol, quantity, price_per_share, commission, purchase_date FROM purchases ORDER BY purchase_date DESC",
+  "query": "INSERT INTO purchases (id, symbol, quantity, price_per_share, commission, purchase_date, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, symbol, quantity, price_per_share, commission, purchase_date",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,15 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Int4",
+        "Numeric",
+        "Numeric",
+        "Date",
+        "Uuid"
+      ]
     },
     "nullable": [
       false,
@@ -46,5 +54,5 @@
       false
     ]
   },
-  "hash": "f12b2a72a233860bdae590cd8eb5d78ea4a7fabd36af34adfdc4f78774f8a746"
+  "hash": "e04557328a97c2fdbba4757b33cd618e52f82a8281f086e5ee80c4064e7d9f00"
 }

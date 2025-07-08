@@ -706,7 +706,6 @@ code {
     background-color: rgb(var(--color-background-secondary));
     color: rgb(var(--color-foreground-secondary));
     padding: 0.75rem 1.5rem;
-    text-align: left;
     font-size: 0.75rem;
     font-weight: 500;
     text-transform: uppercase;
