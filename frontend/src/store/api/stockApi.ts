@@ -6,13 +6,13 @@ import type {
   SymbolSearchParams,
   CreatePurchaseRequest,
   DashboardData,
-  StockDetails,
   ChartData,
   ApiError,
   LoginRequest,
   RegisterRequest,
   AuthResponse,
   ChartPeriod,
+  User,
 } from "./models";
 
 export const stockApi = createApi({
@@ -37,7 +37,7 @@ export const stockApi = createApi({
       return response.status === 200 && !result?.error;
     },
   }),
-  tagTypes: ["Purchase", "Dashboard", "Stock", "Auth"],
+  tagTypes: ["Purchase", "Portfolio", "Stock", "Auth", "User"],
   // Keep cached data for 5 minutes
   keepUnusedDataFor: 300,
   endpoints: (builder) => ({
@@ -48,7 +48,7 @@ export const stockApi = createApi({
         method: "POST",
         body: credentials,
       }),
-      invalidatesTags: ["Auth"],
+      invalidatesTags: ["Auth", "User"],
     }),
 
     register: builder.mutation<AuthResponse, RegisterRequest>({
@@ -57,16 +57,41 @@ export const stockApi = createApi({
         method: "POST",
         body: credentials,
       }),
-      invalidatesTags: ["Auth"],
+      invalidatesTags: ["Auth", "User"],
     }),
 
+    getCurrentUser: builder.query<User, void>({
+      query: () => "/auth/me",
+      providesTags: ["User"],
+    }),
+
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      invalidatesTags: ["Auth", "User", "Purchase", "Portfolio"],
+    }),
+
+    changePassword: builder.mutation<
+      void,
+      { currentPassword: string; newPassword: string }
+    >({
+      query: (passwords) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body: passwords,
+      }),
+    }),
+
+    // Purchase endpoints
     createPurchase: builder.mutation<Purchase, CreatePurchaseRequest>({
       query: (purchase) => ({
         url: "/purchases",
         method: "POST",
         body: purchase,
       }),
-      invalidatesTags: ["Purchase", "Dashboard", "Stock"],
+      invalidatesTags: ["Purchase", "Portfolio", "Stock"],
       // Optimistic update for better UX
       async onQueryStarted(purchase, { dispatch, queryFulfilled }) {
         // Optimistically update the purchases list
@@ -96,106 +121,302 @@ export const stockApi = createApi({
       transformResponse: (response: Purchase[]) => {
         return response.map((purchase) => ({
           ...purchase,
-          price_per_share: Number(purchase.price_per_share),
+          pricePerShare: Number(purchase.pricePerShare),
           commission: Number(purchase.commission),
         }));
       },
     }),
 
+    getPurchaseById: builder.query<Purchase, string>({
+      query: (id) => `/purchases/${id}`,
+      providesTags: (_, __, id) => [{ type: "Purchase", id }],
+    }),
+
+    updatePurchase: builder.mutation<
+      Purchase,
+      { id: string; data: CreatePurchaseRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/purchases/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Purchase", "Portfolio", "Stock"],
+    }),
+
+    deletePurchase: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/purchases/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Purchase", "Portfolio", "Stock"],
+    }),
+
+    getPurchasesBySymbol: builder.query<Purchase[], string>({
+      query: (symbol) => `/purchases/symbol/${symbol}`,
+      providesTags: (_, __, symbol) => [
+        { type: "Purchase", id: `symbol-${symbol}` },
+      ],
+    }),
+
+    getPurchasesByDateRange: builder.query<
+      Purchase[],
+      { startDate: string; endDate: string }
+    >({
+      query: ({ startDate, endDate }) => ({
+        url: "/purchases/date-range",
+        params: { startDate, endDate },
+      }),
+      providesTags: ["Purchase"],
+    }),
+
+    getRecentPurchases: builder.query<Purchase[], number>({
+      query: (limit = 10) => ({
+        url: "/purchases/recent",
+        params: { limit },
+      }),
+      providesTags: ["Purchase"],
+    }),
+
+    getUserSymbols: builder.query<string[], void>({
+      query: () => "/purchases/symbols",
+      providesTags: ["Purchase"],
+    }),
+
+    // Portfolio/Dashboard endpoint
     getDashboard: builder.query<DashboardData, void>({
-      query: () => "/dashboard",
-      providesTags: ["Dashboard"],
-      transformResponse: (response: DashboardData) => ({
-        ...response,
-        total_spent: Number(response.total_spent),
-        current_value: Number(response.current_value),
-        profit_loss: Number(response.profit_loss),
-        profit_loss_percentage: Number(response.profit_loss_percentage),
-        stocks: response.stocks.map((stock) => ({
-          ...stock,
-          quantity: Number(stock.quantity),
-          current_price: Number(stock.current_price),
-          total_value: Number(stock.total_value),
-          total_spent: Number(stock.total_spent),
+      query: () => "/purchases/portfolio",
+      providesTags: ["Portfolio"],
+      transformResponse: (response: any) => ({
+        totalSpent: Number(response.totalSpent),
+        totalValue: Number(response.totalValue),
+        profitLoss: Number(response.profitLoss),
+        profitLossPercentage: Number(response.profitLossPercentage),
+        positions: response.positions.map((position: any) => ({
+          symbol: position.symbol,
+          quantity: Number(position.quantity),
+          currentPrice: Number(position.currentPrice),
+          currentValue: Number(position.currentValue),
+          totalSpent: Number(position.totalSpent),
+          totalCommission: Number(position.totalCommission),
+          profitLoss: Number(position.profitLoss),
+          profitLossPercentage: Number(position.profitLossPercentage),
+          purchaseCount: Number(position.purchaseCount),
+          firstPurchaseDate: position.firstPurchaseDate,
+          lastPurchaseDate: position.lastPurchaseDate,
         })),
-      }),
-      // Polling for real-time updates (every 30 seconds when focused)
-      // Note: pollingInterval should be set when using the hook, not in endpoint definition
-    }),
-
-    getStock: builder.query<StockDetails, string>({
-      query: (symbol) => `/stock/${symbol}`,
-      providesTags: (result, error, symbol) => [{ type: "Stock", id: symbol }],
-      transformResponse: (response: StockDetails) => ({
-        ...response,
-        purchases: response.purchases.map((purchase) => ({
-          ...purchase,
-          price_per_share: Number(purchase.price_per_share),
-          commission: Number(purchase.commission),
-        })),
-        total_quantity: Number(response.total_quantity),
-        total_spent: Number(response.total_spent),
-        current_price: Number(response.current_price),
-        current_value: Number(response.current_value),
-        profit_loss: Number(response.profit_loss),
       }),
     }),
 
-    // Chart data endpoint
+    // Stock endpoints
+    getStockPrice: builder.query<
+      { symbol: string; price: number; lastUpdated: string },
+      string
+    >({
+      query: (symbol) => `/stocks/${symbol}/price`,
+      providesTags: (_, __, symbol) => [
+        { type: "Stock", id: `price-${symbol}` },
+      ],
+    }),
+
+    getMultipleStockPrices: builder.mutation<
+      Array<{ symbol: string; price: number; lastUpdated: string }>,
+      string[]
+    >({
+      query: (symbols) => ({
+        url: "/stocks/prices",
+        method: "POST",
+        body: symbols,
+      }),
+    }),
+
     getStockChart: builder.query<
       ChartData,
       { symbol: string; period?: ChartPeriod }
     >({
-      query: ({ symbol, period = "1M" }) =>
-        `/stock/${symbol}/chart?period=${period}`,
-      providesTags: (result, error, { symbol, period }) => [
-        { type: "Stock", id: `${symbol}-chart-${period}` },
-      ],
-      // Transform response to ensure proper number types
-      transformResponse: (response: ChartData) => ({
-        ...response,
-        price_data: response.price_data.map((point) => ({
-          ...point,
-          price: Number(point.price),
-          volume: point.volume ? Number(point.volume) : undefined,
-        })),
-        purchase_points: response.purchase_points.map((point) => ({
-          ...point,
-          price: Number(point.price),
-        })),
+      query: ({ symbol, period = "1M" }) => ({
+        url: `/stocks/${symbol}/chart`,
+        params: { period },
       }),
+      providesTags: (_, __, { symbol, period }) => [
+        { type: "Stock", id: `chart-${symbol}-${period}` },
+      ],
+      // Transform response to construct ChartData from backend price data
+      transformResponse: (response: any, _, arg) => {
+        // Backend returns List<PricePoint>, need to construct ChartData
+        const priceData = Array.isArray(response) ? response : [];
+
+        return {
+          symbol: arg.symbol,
+          period: arg.period || "1M",
+          priceData: priceData.map((point: any) => ({
+            date: point.date,
+            price: Number(point.price),
+            volume: point.volume ? Number(point.volume) : undefined,
+          })),
+          purchasePoints: [], // Will be populated by frontend logic if needed
+        };
+      },
       // Keep chart data cached longer (10 minutes)
       keepUnusedDataFor: 600,
+    }),
+
+    getStockHistory: builder.query<
+      Array<{ symbol: string; price: number; date: string }>,
+      { symbol: string; startDate: string; endDate: string }
+    >({
+      query: ({ symbol, startDate, endDate }) => ({
+        url: `/stocks/${symbol}/history`,
+        params: { startDate, endDate },
+      }),
+      providesTags: (_, __, { symbol }) => [
+        { type: "Stock", id: `history-${symbol}` },
+      ],
+    }),
+
+    getLatestStockData: builder.query<
+      { symbol: string; price: number; lastUpdated: string },
+      string
+    >({
+      query: (symbol) => `/stocks/${symbol}/latest`,
+      providesTags: (_, __, symbol) => [
+        { type: "Stock", id: `latest-${symbol}` },
+      ],
+    }),
+
+    checkStockDataExists: builder.query<
+      boolean,
+      { symbol: string; date: string }
+    >({
+      query: ({ symbol, date }) => ({
+        url: `/stocks/${symbol}/exists`,
+        params: { date },
+      }),
+    }),
+
+    getAllStockSymbols: builder.query<string[], void>({
+      query: () => "/stocks/symbols",
+      providesTags: ["Stock"],
     }),
 
     // Symbol search endpoint
     searchSymbols: builder.query<SymbolSuggestion[], SymbolSearchParams>({
       query: ({ q, limit = 10 }) => ({
-        url: `/symbols/search`,
-        params: { q, limit },
+        url: "/stocks/search",
+        params: { query: q, limit },
       }),
       // Keep search results cached for 5 minutes
       keepUnusedDataFor: 300,
       // Don't cache empty query results
-      transformResponse: (response: SymbolSuggestion[], meta, arg) => {
+      transformResponse: (response: SymbolSuggestion[], _, arg) => {
         if (!arg.q.trim()) return [];
         return response;
       },
+    }),
+
+    // Stock details endpoint removed - use getPurchasesBySymbol + getStockPrice instead
+
+    // Admin endpoints
+    getStockStatistics: builder.query<Record<string, any>, void>({
+      query: () => "/stocks/statistics",
+      providesTags: ["Stock"],
+    }),
+
+    updateStockDataBulk: builder.mutation<
+      { totalSymbols: number; updatedCount: number; message: string },
+      string[]
+    >({
+      query: (symbols) => ({
+        url: "/stocks/update",
+        method: "POST",
+        body: symbols,
+      }),
+      invalidatesTags: ["Stock"],
+    }),
+
+    cleanupOldStockData: builder.mutation<
+      { deletedCount: number; daysToKeep: number; message: string },
+      number
+    >({
+      query: (daysToKeep = 365) => ({
+        url: "/stocks/cleanup",
+        method: "DELETE",
+        params: { daysToKeep },
+      }),
+      invalidatesTags: ["Stock"],
+    }),
+
+    evictStockPriceCache: builder.mutation<void, string>({
+      query: (symbol) => ({
+        url: `/stocks/${symbol}/cache/price`,
+        method: "DELETE",
+      }),
+    }),
+
+    evictStockChartCache: builder.mutation<
+      void,
+      { symbol: string; period: string }
+    >({
+      query: ({ symbol, period }) => ({
+        url: `/stocks/${symbol}/cache/chart`,
+        method: "DELETE",
+        params: { period },
+      }),
+    }),
+
+    evictAllStockCaches: builder.mutation<void, void>({
+      query: () => ({
+        url: "/stocks/cache/all",
+        method: "DELETE",
+      }),
     }),
   }),
 });
 
 export const {
+  // Auth hooks
   useLoginMutation,
   useRegisterMutation,
+  useGetCurrentUserQuery,
+  useLogoutMutation,
+  useChangePasswordMutation,
+
+  // Purchase hooks
   useCreatePurchaseMutation,
   useGetPurchasesQuery,
+  useGetPurchaseByIdQuery,
+  useUpdatePurchaseMutation,
+  useDeletePurchaseMutation,
+  useGetPurchasesBySymbolQuery,
+  useGetPurchasesByDateRangeQuery,
+  useGetRecentPurchasesQuery,
+  useGetUserSymbolsQuery,
+
+  // Portfolio/Dashboard hooks
   useGetDashboardQuery,
-  useGetStockQuery,
+
+  // Stock hooks
+  useGetStockPriceQuery,
+  useGetMultipleStockPricesMutation,
   useGetStockChartQuery,
+  useGetStockHistoryQuery,
+  useGetLatestStockDataQuery,
+  useCheckStockDataExistsQuery,
+  useGetAllStockSymbolsQuery,
   useSearchSymbolsQuery,
+
+  // Admin hooks
+  useGetStockStatisticsQuery,
+  useUpdateStockDataBulkMutation,
+  useCleanupOldStockDataMutation,
+  useEvictStockPriceCacheMutation,
+  useEvictStockChartCacheMutation,
+  useEvictAllStockCachesMutation,
+
   // Lazy query hooks for manual triggering
-  useLazyGetStockQuery,
+  useLazyGetPurchaseByIdQuery,
+  useLazyGetPurchasesBySymbolQuery,
+  useLazyGetStockPriceQuery,
   useLazyGetStockChartQuery,
   useLazySearchSymbolsQuery,
 } = stockApi;

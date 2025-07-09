@@ -39,7 +39,7 @@ export const StockChart: React.FC<StockChartProps> = ({
   const { t } = useTranslation();
 
   const chartData = useMemo(() => {
-    const sortedPriceData = [...data.price_data].sort(
+    const sortedPriceData = [...data.priceData].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
@@ -50,7 +50,7 @@ export const StockChart: React.FC<StockChartProps> = ({
     const purchaseLabels: string[] = [];
     const purchasePrices: number[] = [];
 
-    data.purchase_points.forEach((purchase) => {
+    data.purchasePoints.forEach((purchase) => {
       const dateIndex = labels.findIndex((label) => label === purchase.date);
       if (dateIndex !== -1) {
         purchaseLabels.push(purchase.date);
@@ -74,7 +74,7 @@ export const StockChart: React.FC<StockChartProps> = ({
         },
         {
           label: t("chart.purchases"),
-          data: data.purchase_points.map((purchase) => purchase.price),
+          data: data.purchasePoints.map((purchase) => purchase.price),
           borderColor: "rgb(239, 68, 68)",
           backgroundColor: "rgb(239, 68, 68)",
           pointRadius: 6,
@@ -87,8 +87,8 @@ export const StockChart: React.FC<StockChartProps> = ({
   }, [data, t]);
 
   const options = useMemo(() => {
-    const minPrice = Math.min(...data.price_data.map((p) => p.price));
-    const maxPrice = Math.max(...data.price_data.map((p) => p.price));
+    const minPrice = Math.min(...data.priceData.map((p) => p.price));
+    const maxPrice = Math.max(...data.priceData.map((p) => p.price));
     const padding = (maxPrice - minPrice) * 0.1;
 
     return {
@@ -161,7 +161,7 @@ export const StockChart: React.FC<StockChartProps> = ({
           ticks: {
             color: "rgb(107, 114, 128)",
             maxTicksLimit: 8,
-            callback: function (value: any, index: number): string {
+            callback: function (value: any, _index: number): string {
               const date = (this as any).getLabelForValue(value);
               try {
                 return format(parseISO(date), "MMM dd");

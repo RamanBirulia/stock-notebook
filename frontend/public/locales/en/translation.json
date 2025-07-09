@@ -156,13 +156,17 @@
       "password": "Password",
       "usernamePlaceholder": "Enter your username",
       "passwordPlaceholder": "Enter your password",
-      "loading": "Please wait..."
+      "loading": "Please wait...",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password"
     },
     "validation": {
       "usernameRequired": "Username is required",
       "usernameMinLength": "Username must be at least 3 characters",
       "passwordRequired": "Password is required",
-      "passwordMinLength": "Password must be at least 6 characters"
+      "passwordMinLength": "Password must be at least 6 characters",
+      "confirmPasswordRequired": "Password confirmation is required",
+      "passwordMismatch": "Passwords do not match"
     },
     "error": {
       "generic": "An error occurred. Please try again."

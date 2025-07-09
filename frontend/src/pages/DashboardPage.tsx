@@ -14,7 +14,7 @@ const DashboardPage: React.FC = () => {
   const { data: dashboardData, isLoading, error } = useGetDashboardQuery();
 
   const hasDashboardItems =
-    dashboardData && (dashboardData?.stocks.length || 0) > 0;
+    dashboardData && (dashboardData?.positions.length || 0) > 0;
   const isDashboardReady = !isLoading && !error;
 
   return (
@@ -29,7 +29,7 @@ const DashboardPage: React.FC = () => {
         <div className="space-y-6 @container/dashboard">
           <DashboardHeader />
           <DashboardStats dashboardData={dashboardData} />
-          <PortfolioTable stocks={dashboardData.stocks} />
+          <PortfolioTable stocks={dashboardData.positions} />
         </div>
       )}
     </>

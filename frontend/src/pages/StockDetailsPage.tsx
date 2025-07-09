@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -10,7 +10,11 @@ import {
   Share,
 } from "lucide-react";
 
-import { useGetStockQuery, useGetStockChartQuery } from "../store/api/stockApi";
+import {
+  useGetPurchasesBySymbolQuery,
+  useGetStockPriceQuery,
+  useGetStockChartQuery,
+} from "../store/api/stockApi";
 import { ChartPeriod } from "../store/api/models";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -24,15 +28,23 @@ export const StockDetailsPage: React.FC = () => {
 
   // API queries
   const {
-    data: stockData,
-    isLoading: isLoadingStock,
-    error: stockError,
-  } = useGetStockQuery(symbol || "", {
+    data: purchasesData,
+    isLoading: isLoadingPurchases,
+    error: purchasesError,
+  } = useGetPurchasesBySymbolQuery(symbol || "", {
     skip: !symbol,
   });
 
   const {
-    data: chartData,
+    data: priceData,
+    isLoading: isLoadingPrice,
+    error: priceError,
+  } = useGetStockPriceQuery(symbol || "", {
+    skip: !symbol,
+  });
+
+  const {
+    data: baseChartData,
     isLoading: isLoadingChart,
     error: chartError,
   } = useGetStockChartQuery(
@@ -47,6 +59,52 @@ export const StockDetailsPage: React.FC = () => {
   const handleBack = () => {
     navigate(-1);
   };
+
+  // Calculate stock details from purchases and current price
+  const stockData = useMemo(() => {
+    if (!purchasesData || !priceData) return null;
+
+    const totalQuantity = purchasesData.reduce(
+      (sum, purchase) => sum + purchase.quantity,
+      0,
+    );
+    const totalSpent = purchasesData.reduce(
+      (sum, purchase) =>
+        sum +
+        (purchase.quantity * purchase.pricePerShare + purchase.commission),
+      0,
+    );
+    const currentValue = totalQuantity * priceData.price;
+    const profitLoss = currentValue - totalSpent;
+
+    return {
+      symbol: symbol || "",
+      purchases: purchasesData,
+      totalQuantity,
+      totalSpent,
+      currentPrice: priceData.price,
+      currentValue,
+      profitLoss,
+    };
+  }, [purchasesData, priceData, symbol]);
+
+  // Add purchase points to chart data
+  const chartData = useMemo(() => {
+    if (!baseChartData || !purchasesData) return baseChartData;
+
+    const purchasePoints = purchasesData.map((purchase) => ({
+      date: purchase.purchaseDate,
+      price: purchase.pricePerShare,
+    }));
+
+    return {
+      ...baseChartData,
+      purchasePoints,
+    };
+  }, [baseChartData, purchasesData]);
+
+  const isLoading = isLoadingPurchases || isLoadingPrice;
+  const error = purchasesError || priceError;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -83,7 +141,7 @@ export const StockDetailsPage: React.FC = () => {
     );
   }
 
-  if (stockError) {
+  if (error) {
     return (
       <div className="text-center py-12">
         <p className="text-red-500 mb-4">
@@ -96,7 +154,7 @@ export const StockDetailsPage: React.FC = () => {
     );
   }
 
-  if (isLoadingStock) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -131,11 +189,11 @@ export const StockDetailsPage: React.FC = () => {
   }
 
   const profitLossPercentage =
-    stockData.total_spent > 0
-      ? (stockData.profit_loss / stockData.total_spent) * 100
+    stockData.totalSpent > 0
+      ? (stockData.profitLoss / stockData.totalSpent) * 100
       : 0;
 
-  const isProfit = stockData.profit_loss >= 0;
+  const isProfit = stockData.profitLoss >= 0;
 
   return (
     <div className="space-y-6">
@@ -151,7 +209,7 @@ export const StockDetailsPage: React.FC = () => {
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               {t("stock.details.currentPrice")}:{" "}
-              {formatCurrency(stockData.current_price)}
+              {formatCurrency(stockData.currentPrice)}
             </p>
           </div>
         </div>
@@ -169,7 +227,7 @@ export const StockDetailsPage: React.FC = () => {
                 {t("stock.details.metrics.totalShares")}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(stockData.total_quantity)}
+                {formatNumber(stockData.totalQuantity)}
               </p>
             </div>
           </div>
@@ -185,7 +243,7 @@ export const StockDetailsPage: React.FC = () => {
                 {t("stock.details.metrics.currentValue")}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatCurrency(stockData.current_value)}
+                {formatCurrency(stockData.currentValue)}
               </p>
             </div>
           </div>
@@ -201,7 +259,7 @@ export const StockDetailsPage: React.FC = () => {
                 {t("stock.details.metrics.totalInvested")}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatCurrency(stockData.total_spent)}
+                {formatCurrency(stockData.totalSpent)}
               </p>
             </div>
           </div>
@@ -233,7 +291,7 @@ export const StockDetailsPage: React.FC = () => {
                     : "text-red-600 dark:text-red-400"
                 }`}
               >
-                {formatCurrency(stockData.profit_loss)}
+                {formatCurrency(stockData.profitLoss)}
               </p>
               <p
                 className={`text-sm ${
@@ -315,7 +373,7 @@ export const StockDetailsPage: React.FC = () => {
               <tbody>
                 {stockData.purchases.map((purchase) => {
                   const totalCost =
-                    purchase.quantity * purchase.price_per_share +
+                    purchase.quantity * purchase.pricePerShare +
                     purchase.commission;
                   return (
                     <tr
@@ -324,7 +382,7 @@ export const StockDetailsPage: React.FC = () => {
                     >
                       <td className="py-3 px-4 text-gray-900 dark:text-white">
                         {format(
-                          new Date(purchase.purchase_date),
+                          new Date(purchase.purchaseDate),
                           "MMM dd, yyyy",
                         )}
                       </td>
@@ -332,7 +390,7 @@ export const StockDetailsPage: React.FC = () => {
                         {formatNumber(purchase.quantity)}
                       </td>
                       <td className="py-3 px-4 text-gray-900 dark:text-white">
-                        {formatCurrency(purchase.price_per_share)}
+                        {formatCurrency(purchase.pricePerShare)}
                       </td>
                       <td className="py-3 px-4 text-gray-900 dark:text-white">
                         {formatCurrency(purchase.commission)}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   PieChart,
   Plus,
@@ -22,13 +21,11 @@ import {
 
 import { useI18nReady } from "../hooks/useI18nReady";
 import { SkeletonLandingHeader } from "../components/ui/loading/SkeletonHeader";
-import { fakeDashboardData } from "../components/landing/data/landingData";
 import { LandingHeader } from "../components/landing/components/LandingHeader";
 import { SpeechBubble } from "../components/landing/components/SpeechBubble";
-import {LandingDashboard} from "../components/landing/LandingDashboard";
+import { LandingDashboard } from "../components/landing/LandingDashboard";
 
 // Hand-drawn style speech bubble component
-
 
 // Demo form component
 const DemoForm: React.FC = () => {

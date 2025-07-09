@@ -15,17 +15,17 @@ import { Input } from "../components/ui/Input";
 interface FormData {
   symbol: string;
   quantity: string;
-  price_per_share: string;
+  pricePerShare: string;
   commission: string;
-  purchase_date: string;
+  purchaseDate: string;
 }
 
 interface FormErrors {
   symbol?: string;
   quantity?: string;
-  price_per_share?: string;
+  pricePerShare?: string;
   commission?: string;
-  purchase_date?: string;
+  purchaseDate?: string;
   submit?: string;
 }
 
@@ -37,9 +37,9 @@ const AddPurchasePage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     symbol: "",
     quantity: "",
-    price_per_share: "",
+    pricePerShare: "",
     commission: "0",
-    purchase_date: format(new Date(), "yyyy-MM-dd"),
+    purchaseDate: format(new Date(), "yyyy-MM-dd"),
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -62,12 +62,12 @@ const AddPurchasePage: React.FC = () => {
       }
     }
 
-    if (!formData.price_per_share.trim()) {
-      newErrors.price_per_share = t("addPurchase.errors.priceRequired");
+    if (!formData.pricePerShare.trim()) {
+      newErrors.pricePerShare = t("addPurchase.errors.priceRequired");
     } else {
-      const price = parseFloat(formData.price_per_share);
+      const price = parseFloat(formData.pricePerShare);
       if (isNaN(price) || price <= 0) {
-        newErrors.price_per_share = t("addPurchase.errors.priceInvalid");
+        newErrors.pricePerShare = t("addPurchase.errors.priceInvalid");
       }
     }
 
@@ -76,8 +76,8 @@ const AddPurchasePage: React.FC = () => {
       newErrors.commission = t("addPurchase.errors.commissionInvalid");
     }
 
-    if (!formData.purchase_date) {
-      newErrors.purchase_date = t("addPurchase.errors.dateRequired");
+    if (!formData.purchaseDate) {
+      newErrors.purchaseDate = t("addPurchase.errors.dateRequired");
     }
 
     setErrors(newErrors);
@@ -95,9 +95,9 @@ const AddPurchasePage: React.FC = () => {
       await createPurchase({
         symbol: formData.symbol.toUpperCase(),
         quantity: parseInt(formData.quantity),
-        price_per_share: parseFloat(formData.price_per_share),
+        pricePerShare: parseFloat(formData.pricePerShare),
         commission: parseFloat(formData.commission),
-        purchase_date: formData.purchase_date,
+        purchaseDate: formData.purchaseDate,
       }).unwrap();
 
       navigate("/", {
@@ -213,9 +213,9 @@ const AddPurchasePage: React.FC = () => {
               min="0"
               step="0.01"
               placeholder={t("addPurchase.placeholders.pricePerShare")}
-              value={formData.price_per_share}
-              onChange={handleInputChange("price_per_share")}
-              error={errors.price_per_share}
+              value={formData.pricePerShare}
+              onChange={handleInputChange("pricePerShare")}
+              error={errors.pricePerShare}
               leftIcon={<span className="text-sm">$</span>}
               required
             />
@@ -238,14 +238,14 @@ const AddPurchasePage: React.FC = () => {
             <Input
               label={t("addPurchase.fields.purchaseDate")}
               type="date"
-              value={formData.purchase_date}
-              onChange={handleInputChange("purchase_date")}
-              error={errors.purchase_date}
+              value={formData.purchaseDate}
+              onChange={handleInputChange("purchaseDate")}
+              error={errors.purchaseDate}
               required
             />
 
             {/* Summary */}
-            {formData.quantity && formData.price_per_share && (
+            {formData.quantity && formData.pricePerShare && (
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                   {t("addPurchase.summary.title")}
@@ -254,7 +254,7 @@ const AddPurchasePage: React.FC = () => {
                   <div className="flex justify-between">
                     <span>{t("addPurchase.summary.shares")}:</span>
                     <span>
-                      {formData.quantity} × ${formData.price_per_share}
+                      {formData.quantity} × ${formData.pricePerShare}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -263,7 +263,7 @@ const AddPurchasePage: React.FC = () => {
                       $
                       {(
                         parseFloat(formData.quantity || "0") *
-                        parseFloat(formData.price_per_share || "0")
+                        parseFloat(formData.pricePerShare || "0")
                       ).toFixed(2)}
                     </span>
                   </div>
@@ -279,7 +279,7 @@ const AddPurchasePage: React.FC = () => {
                       $
                       {(
                         parseFloat(formData.quantity || "0") *
-                          parseFloat(formData.price_per_share || "0") +
+                          parseFloat(formData.pricePerShare || "0") +
                         parseFloat(formData.commission || "0")
                       ).toFixed(2)}
                     </span>

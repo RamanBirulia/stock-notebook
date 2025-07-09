@@ -39,10 +39,12 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
+    confirmPassword: "",
   });
   const [validationErrors, setValidationErrors] = useState<{
     username?: string;
     password?: string;
+    confirmPassword?: string;
   }>({});
 
   // Clear errors when switching modes
@@ -52,7 +54,11 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   }, [isLoginMode, dispatch]);
 
   const validateForm = () => {
-    const errors: { username?: string; password?: string } = {};
+    const errors: {
+      username?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
 
     if (!formData.username.trim()) {
       errors.username = t("auth.validation.usernameRequired");
@@ -64,6 +70,14 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       errors.password = t("auth.validation.passwordRequired");
     } else if (formData.password.length < 6) {
       errors.password = t("auth.validation.passwordMinLength");
+    }
+
+    if (!isLoginMode) {
+      if (!formData.confirmPassword) {
+        errors.confirmPassword = t("auth.validation.confirmPasswordRequired");
+      } else if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = t("auth.validation.passwordMismatch");
+      }
     }
 
     setValidationErrors(errors);
@@ -119,7 +133,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
-    setFormData({ username: "", password: "" });
+    setFormData({ username: "", password: "", confirmPassword: "" });
   };
 
   const togglePasswordVisibility = () => {
@@ -198,6 +212,22 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               )}
             </button>
           </div>
+
+          {!isLoginMode && (
+            <div>
+              <Input
+                label={t("auth.form.confirmPassword")}
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                error={validationErrors.confirmPassword}
+                placeholder={t("auth.form.confirmPasswordPlaceholder")}
+                disabled={isLoading}
+                required
+              />
+            </div>
+          )}
 
           <Button
             type="submit"

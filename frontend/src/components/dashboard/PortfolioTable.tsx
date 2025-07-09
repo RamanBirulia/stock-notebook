@@ -5,16 +5,18 @@ import { useTranslation } from "react-i18next";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 
-interface Stock {
+interface PortfolioPosition {
   symbol: string;
   quantity: number;
-  current_price: number;
-  total_value: number;
-  total_spent: number;
+  currentPrice: number;
+  currentValue: number;
+  totalSpent: number;
+  profitLoss: number;
+  profitLossPercentage: number;
 }
 
 interface PortfolioTableProps {
-  stocks: Stock[];
+  stocks: PortfolioPosition[];
 }
 
 export const PortfolioTable: React.FC<PortfolioTableProps> = ({ stocks }) => {
@@ -83,7 +85,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ stocks }) => {
           </thead>
           <tbody>
             {stocks.map((stock) => {
-              const stockProfitLoss = stock.total_value - stock.total_spent;
+              const stockProfitLoss = stock.profitLoss;
               const isStockProfit = stockProfitLoss >= 0;
 
               return (
@@ -101,13 +103,13 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ stocks }) => {
                     {stock.quantity.toFixed(0)}
                   </td>
                   <td className="text-right text-sm sm:text-base px-2 sm:px-4">
-                    ${stock.current_price.toFixed(2)}
+                    ${stock.currentPrice.toFixed(2)}
                   </td>
                   <td className="text-right font-medium text-sm sm:text-base px-2 sm:px-4">
-                    ${stock.total_value.toFixed(2)}
+                    ${stock.currentValue.toFixed(2)}
                   </td>
                   <td className="text-right text-sm sm:text-base px-2 sm:px-4 hidden md:table-cell">
-                    ${stock.total_spent.toFixed(2)}
+                    ${stock.totalSpent.toFixed(2)}
                   </td>
                   <td
                     className={`text-right font-medium text-sm sm:text-base px-2 sm:px-4 ${

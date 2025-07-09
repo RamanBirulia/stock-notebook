@@ -10,10 +10,10 @@ import {
 import { Card } from "../ui/Card";
 
 interface DashboardData {
-  total_spent: number;
-  current_value: number;
-  profit_loss: number;
-  profit_loss_percentage: number;
+  totalSpent: number;
+  totalValue: number;
+  profitLoss: number;
+  profitLossPercentage: number;
 }
 
 interface DashboardStatsProps {
@@ -24,13 +24,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   dashboardData,
 }) => {
   const { t } = useTranslation();
-  const isProfit = dashboardData.profit_loss >= 0;
+  const isProfit = dashboardData.profitLoss >= 0;
 
   const stats = [
     {
       id: 1,
       name: t("dashboard.stats.currentValue"),
-      value: `$${dashboardData.current_value.toFixed(2)}`,
+      value: `$${dashboardData.totalValue.toFixed(2)}`,
       icon: PieChart,
       iconColor: "text-success-600",
       valueColor: "text-gray-900 dark:text-white",
@@ -38,7 +38,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     {
       id: 2,
       name: t("dashboard.stats.totalSpent"),
-      value: `$${dashboardData.total_spent.toFixed(2)}`,
+      value: `$${dashboardData.totalSpent.toFixed(2)}`,
       icon: DollarSign,
       iconColor: "text-primary-600",
       valueColor: "text-gray-900 dark:text-white",
@@ -46,7 +46,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     {
       id: 3,
       name: t("dashboard.stats.profitLoss"),
-      value: `${isProfit ? "+" : ""}$${dashboardData.profit_loss.toFixed(2)}`,
+      value: `${isProfit ? "+" : ""}$${dashboardData.profitLoss.toFixed(2)}`,
       icon: isProfit ? TrendingUp : TrendingDown,
       iconColor: isProfit ? "text-success-600" : "text-danger-600",
       valueColor: isProfit ? "text-success-600" : "text-danger-600",
@@ -54,7 +54,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     {
       id: 4,
       name: t("dashboard.stats.percentage"),
-      value: `${isProfit ? "+" : ""}${dashboardData.profit_loss_percentage.toFixed(2)}%`,
+      value: `${isProfit ? "+" : ""}${dashboardData.profitLossPercentage.toFixed(2)}%`,
       icon: BarChart3,
       iconColor: isProfit ? "text-success-600" : "text-danger-600",
       valueColor: isProfit ? "text-success-600" : "text-danger-600",
