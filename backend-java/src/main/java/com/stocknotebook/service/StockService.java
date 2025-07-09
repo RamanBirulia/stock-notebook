@@ -4,7 +4,9 @@ import com.stocknotebook.client.YahooFinanceClient;
 import com.stocknotebook.dto.response.StockPriceDTO;
 import com.stocknotebook.dto.response.SymbolSuggestionDTO;
 import com.stocknotebook.entity.StockData;
+import com.stocknotebook.entity.Symbol;
 import com.stocknotebook.repository.StockDataRepository;
+import com.stocknotebook.repository.SymbolRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +32,16 @@ public class StockService {
     );
 
     private final StockDataRepository stockDataRepository;
+    private final SymbolRepository symbolRepository;
     private final YahooFinanceClient yahooFinanceClient;
 
     public StockService(
         StockDataRepository stockDataRepository,
+        SymbolRepository symbolRepository,
         YahooFinanceClient yahooFinanceClient
     ) {
         this.stockDataRepository = stockDataRepository;
+        this.symbolRepository = symbolRepository;
         this.yahooFinanceClient = yahooFinanceClient;
     }
 
@@ -194,7 +201,7 @@ public class StockService {
     }
 
     /**
-     * Search for stock symbols
+     * Search for stock symbols using database
      */
     @Cacheable(value = "symbolSearch", key = "#query + '_' + #limit")
     public List<SymbolSuggestionDTO> searchSymbols(String query, int limit) {
@@ -205,7 +212,42 @@ public class StockService {
         );
 
         try {
-            return yahooFinanceClient.searchSymbols(query, limit);
+            if (query == null || query.trim().isEmpty()) {
+                return getPopularSymbols(limit);
+            }
+
+            String trimmedQuery = query.trim();
+            Pageable pageable = PageRequest.of(0, limit);
+
+            // Search by symbol or company name with pagination
+            List<Symbol> symbols = symbolRepository
+                .searchBySymbolOrCompanyName(trimmedQuery, pageable)
+                .getContent();
+
+            // If no results and query is short, try full-text search
+            if (symbols.isEmpty() && trimmedQuery.length() > 2) {
+                try {
+                    // Format query for PostgreSQL full-text search
+                    String formattedQuery = formatFullTextQuery(trimmedQuery);
+                    symbols = symbolRepository
+                        .fullTextSearch(formattedQuery)
+                        .stream()
+                        .limit(limit)
+                        .collect(Collectors.toList());
+                } catch (Exception e) {
+                    log.warn(
+                        "Full-text search failed for query: {}, falling back to regular search",
+                        trimmedQuery,
+                        e
+                    );
+                }
+            }
+
+            log.info("Found {} symbols for query: {}", symbols.size(), query);
+            return symbols
+                .stream()
+                .map(this::mapToSymbolSuggestionDTO)
+                .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Failed to search symbols for query: {}", query, e);
             throw new RuntimeException(
@@ -363,6 +405,96 @@ public class StockService {
         log.info("Evicted all stock caches");
     }
 
+    /**
+     * Get popular symbols (used as fallback when search query is empty)
+     */
+    @Transactional(readOnly = true)
+    public List<SymbolSuggestionDTO> getPopularSymbols(int limit) {
+        log.info("Getting {} popular symbols", limit);
+
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Symbol> symbols = symbolRepository.findPopularSymbols(pageable);
+
+        return symbols
+            .stream()
+            .map(this::mapToSymbolSuggestionDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get symbols by sector
+     */
+    @Transactional(readOnly = true)
+    public List<SymbolSuggestionDTO> getSymbolsBySector(
+        String sector,
+        int limit
+    ) {
+        log.info(
+            "Getting symbols for sector: {} with limit: {}",
+            sector,
+            limit
+        );
+
+        List<Symbol> symbols = symbolRepository
+            .findBySectorIgnoreCaseAndIsActiveTrue(sector)
+            .stream()
+            .limit(limit)
+            .collect(Collectors.toList());
+
+        return symbols
+            .stream()
+            .map(this::mapToSymbolSuggestionDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all unique sectors
+     */
+    @Transactional(readOnly = true)
+    public List<String> getAllSectors() {
+        log.info("Getting all unique sectors");
+        return symbolRepository.findAllUniqueSectors();
+    }
+
+    /**
+     * Get all unique industries
+     */
+    @Transactional(readOnly = true)
+    public List<String> getAllIndustries() {
+        log.info("Getting all unique industries");
+        return symbolRepository.findAllUniqueIndustries();
+    }
+
+    /**
+     * Get symbol metadata
+     */
+    @Transactional(readOnly = true)
+    public Optional<Symbol> getSymbolMetadata(String symbol) {
+        log.info("Getting metadata for symbol: {}", symbol);
+        return symbolRepository.findBySymbolIgnoreCase(symbol);
+    }
+
+    /**
+     * Get symbol statistics
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getSymbolStatistics() {
+        log.info("Getting symbol statistics");
+
+        Object[] stats = symbolRepository.getSymbolStatistics();
+
+        return Map.of(
+            "totalSymbols",
+            stats[0],
+            "uniqueSectors",
+            stats[1],
+            "uniqueIndustries",
+            stats[2],
+            "uniqueExchanges",
+            stats[3]
+        );
+    }
+
     // Private helper methods
 
     private long updateSingleSymbol(String symbol) {
@@ -483,5 +615,36 @@ public class StockService {
             stockDataList.size(),
             symbol
         );
+    }
+
+    /**
+     * Map Symbol entity to SymbolSuggestionDTO
+     */
+    private SymbolSuggestionDTO mapToSymbolSuggestionDTO(Symbol symbol) {
+        return new SymbolSuggestionDTO(
+            symbol.getSymbol(),
+            symbol.getCompanyName(),
+            symbol.getDescription(),
+            symbol.getSector(),
+            symbol.getIndustry(),
+            symbol.getExchange(),
+            symbol.getMarketCapCategory() != null
+                ? symbol.getMarketCapCategory().name()
+                : null,
+            symbol.getCountry(),
+            symbol.getCurrency()
+        );
+    }
+
+    /**
+     * Format query for PostgreSQL full-text search
+     */
+    private String formatFullTextQuery(String query) {
+        // Remove special characters and split by spaces
+        String cleanQuery = query.replaceAll("[^a-zA-Z0-9\\s]", " ");
+        String[] words = cleanQuery.trim().split("\\s+");
+
+        // Join words with & operator for PostgreSQL full-text search
+        return String.join(" & ", words);
     }
 }

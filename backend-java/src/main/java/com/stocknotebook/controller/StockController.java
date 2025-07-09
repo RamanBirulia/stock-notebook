@@ -398,4 +398,140 @@ public class StockController {
             ).build();
         }
     }
+
+    /**
+     * Get popular symbols
+     */
+    @GetMapping("/popular")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<SymbolSuggestionDTO>> getPopularSymbols(
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        log.info("Get popular symbols request received with limit: {}", limit);
+
+        try {
+            List<SymbolSuggestionDTO> popularSymbols =
+                stockService.getPopularSymbols(limit);
+            return ResponseEntity.ok(popularSymbols);
+        } catch (Exception e) {
+            log.error("Error getting popular symbols", e);
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
+
+    /**
+     * Get symbols by sector
+     */
+    @GetMapping("/sector/{sector}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<SymbolSuggestionDTO>> getSymbolsBySector(
+        @PathVariable String sector,
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        log.info(
+            "Get symbols by sector request received for sector: {} with limit: {}",
+            sector,
+            limit
+        );
+
+        try {
+            List<SymbolSuggestionDTO> symbols = stockService.getSymbolsBySector(
+                sector,
+                limit
+            );
+            return ResponseEntity.ok(symbols);
+        } catch (Exception e) {
+            log.error("Error getting symbols by sector: {}", sector, e);
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
+
+    /**
+     * Get all unique sectors
+     */
+    @GetMapping("/sectors")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<String>> getAllSectors() {
+        log.info("Get all sectors request received");
+
+        try {
+            List<String> sectors = stockService.getAllSectors();
+            return ResponseEntity.ok(sectors);
+        } catch (Exception e) {
+            log.error("Error getting all sectors", e);
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
+
+    /**
+     * Get all unique industries
+     */
+    @GetMapping("/industries")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<String>> getAllIndustries() {
+        log.info("Get all industries request received");
+
+        try {
+            List<String> industries = stockService.getAllIndustries();
+            return ResponseEntity.ok(industries);
+        } catch (Exception e) {
+            log.error("Error getting all industries", e);
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
+
+    /**
+     * Get symbol metadata
+     */
+    @GetMapping("/{symbol}/metadata")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<com.stocknotebook.entity.Symbol> getSymbolMetadata(
+        @PathVariable String symbol
+    ) {
+        log.info("Get symbol metadata request received for symbol: {}", symbol);
+
+        try {
+            Optional<com.stocknotebook.entity.Symbol> metadata =
+                stockService.getSymbolMetadata(symbol);
+            return metadata
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error(
+                "Error getting symbol metadata for symbol: {}",
+                symbol,
+                e
+            );
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
+
+    /**
+     * Get symbol statistics
+     */
+    @GetMapping("/symbols/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getSymbolStatistics() {
+        log.info("Get symbol statistics request received");
+
+        try {
+            Map<String, Object> statistics = stockService.getSymbolStatistics();
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            log.error("Error getting symbol statistics", e);
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).build();
+        }
+    }
 }

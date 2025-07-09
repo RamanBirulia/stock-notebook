@@ -339,8 +339,13 @@ public class YahooFinanceClient {
                                 new SymbolSuggestionDTO(
                                     symbol,
                                     name,
+                                    null, // description
+                                    null, // sector
+                                    null, // industry
                                     exchange,
-                                    typeDisplay
+                                    null, // marketCapCategory
+                                    "US", // country
+                                    "USD" // currency
                                 )
                             );
                         }
