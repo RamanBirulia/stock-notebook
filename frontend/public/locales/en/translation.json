@@ -48,7 +48,11 @@
       },
       "chart": {
         "title": "Price Chart",
-        "periods": {}
+        "periods": {
+          "1M": "1M",
+          "1Y": "1Y",
+          "5Y": "5Y"
+        }
       },
       "purchaseHistory": {
         "title": "Purchase History",

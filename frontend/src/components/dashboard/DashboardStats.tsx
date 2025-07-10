@@ -7,7 +7,7 @@ import {
   PieChart,
   BarChart3,
 } from "lucide-react";
-import { Card } from "../ui/Card";
+import { DashboardStatisticWidget } from "../ui/DashboardStatisticWidget";
 
 interface DashboardData {
   totalSpent: number;
@@ -65,27 +65,18 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     <div className="mx-auto max-w-7xl">
       <div className="mx-auto max-w-2xl lg:max-w-none">
         <dl className="grid grid-cols-1 gap-4 overflow-hidden rounded-lg text-center sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.id}>
-                <div className="flex gap-x-4 justify-center">
-                  <div className="flex justify-center mb-2">
-                    <Icon className={`h-8 w-8 ${stat.iconColor}`} />
-                  </div>
-                  <dd
-                    className={`text-3xl font-semibold tracking-tight ${stat.valueColor}`}
-                  >
-                    {stat.value}
-                  </dd>
-                </div>
-
-                <dt className="text-sm/6 font-semibold text-gray-600 dark:text-gray-400">
-                  {stat.name}
-                </dt>
-              </Card>
-            );
-          })}
+          {stats.map((stat) => (
+            <DashboardStatisticWidget
+              key={stat.id}
+              id={stat.id}
+              name={stat.name}
+              value={stat.value}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              valueColor={stat.valueColor}
+              layout="vertical"
+            />
+          ))}
         </dl>
       </div>
     </div>
